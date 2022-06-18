@@ -20,3 +20,26 @@ impl fmt::Debug for Bitboard {
         write!(f, "{}", formatted)
     }
 }
+
+impl Bitboard {
+    pub fn set(&mut self, i: u32) {
+        self.0 |= 1 << i;
+        assert!(i < 64);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::rstest;
+
+    #[rstest]
+    #[case(0, 0, 1)]
+    #[case(0, 63, 2_u64.pow(63))]
+    #[case(0b10111111, 6, u8::MAX.into())]
+    fn set_test(#[case] bb: u64, #[case] i: u32, #[case] expected: u64) {
+        let mut bb = Bitboard(bb);
+        bb.set(i);
+        assert_eq!(expected, bb.0);
+    }
+}
