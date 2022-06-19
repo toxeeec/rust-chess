@@ -31,8 +31,22 @@ impl fmt::Display for Bitboard {
 
 impl Bitboard {
     pub fn set(&mut self, i: u32) {
-        self.0 |= 1 << i;
         assert!(i < 64);
+        self.0 |= 1 << i;
+    }
+
+    //returns index of lsb
+    pub fn pop_lsb(&mut self) -> Option<u32> {
+        let (mut n, mut i) = (self.0, 0);
+        for _ in 0..64 {
+            if n & 1 == 1 {
+                return Some(i);
+            } else {
+                n >>= 1;
+                i += 1;
+            }
+        }
+        None
     }
 }
 
@@ -43,11 +57,23 @@ mod tests {
 
     #[rstest]
     #[case(0, 0, 1)]
-    #[case(0, 63, 2_u64.pow(63))]
+    #[case(0, 63, 1<<63)]
     #[case(0b10111111, 6, u8::MAX.into())]
+    #[should_panic]
+    #[case(0, 64, 0)]
     fn set_test(#[case] bb: u64, #[case] i: u32, #[case] expected: u64) {
         let mut bb = Bitboard(bb);
         bb.set(i);
         assert_eq!(expected, bb.0);
+    }
+
+    #[rstest]
+    #[case(1, Some(0))]
+    #[case(1 << 63, Some(63))]
+    #[case(0b10100000, Some(5))]
+    #[case(0, None)]
+    fn pop_lsb_test(#[case] bb: u64, #[case] expected: Option<u32>) {
+        let mut bb = Bitboard(bb);
+        assert_eq!(expected, bb.pop_lsb());
     }
 }
