@@ -1,65 +1,88 @@
 use super::fen;
 use super::Bitboard;
 use super::Fen;
+use std::fmt;
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct Board {
-    white_rook: Bitboard,
-    white_knight: Bitboard,
-    white_bishop: Bitboard,
-    white_king: Bitboard,
-    white_queen: Bitboard,
-    white_pawn: Bitboard,
+#[derive(Clone, Copy)]
+enum Piece {
+    WhiteRook,
+    WhiteKnight,
+    WhiteBishop,
+    WhiteKing,
+    WhiteQueen,
+    WhitePawn,
 
-    black_rook: Bitboard,
-    black_knight: Bitboard,
-    black_bishop: Bitboard,
-    black_king: Bitboard,
-    black_queen: Bitboard,
-    black_pawn: Bitboard,
+    BlackRook,
+    BlackKnight,
+    BlackBishop,
+    BlackKing,
+    BlackQueen,
+    BlackPawn,
 }
 
+const PIECE_ITEMS: [Piece; 12] = [
+    Piece::WhiteRook,
+    Piece::WhiteKnight,
+    Piece::WhiteBishop,
+    Piece::WhiteKing,
+    Piece::WhiteQueen,
+    Piece::WhitePawn,
+    Piece::BlackRook,
+    Piece::BlackKnight,
+    Piece::BlackBishop,
+    Piece::BlackKing,
+    Piece::BlackQueen,
+    Piece::BlackPawn,
+];
+
+pub const CHAR_PIECES: [char; 12] = ['R', 'N', 'B', 'K', 'Q', 'P', 'r', 'n', 'b', 'k', 'q', 'p'];
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Board(pub [Bitboard; 12]);
+
 impl Board {
-    pub fn bitboard_from_char(&mut self, piece: char) -> Option<&mut Bitboard> {
-        match piece {
-            'R' => Some(&mut self.white_rook),
-            'N' => Some(&mut self.white_knight),
-            'B' => Some(&mut self.white_bishop),
-            'K' => Some(&mut self.white_king),
-            'Q' => Some(&mut self.white_queen),
-            'P' => Some(&mut self.white_pawn),
-            'r' => Some(&mut self.black_rook),
-            'n' => Some(&mut self.black_knight),
-            'b' => Some(&mut self.black_bishop),
-            'k' => Some(&mut self.black_king),
-            'q' => Some(&mut self.black_queen),
-            'p' => Some(&mut self.black_pawn),
-            _ => None,
-        }
-    }
-
     pub fn empty() -> Self {
-        Self {
-            white_rook: Bitboard(0),
-            white_knight: Bitboard(0),
-            white_bishop: Bitboard(0),
-            white_king: Bitboard(0),
-            white_queen: Bitboard(0),
-            white_pawn: Bitboard(0),
-
-            black_rook: Bitboard(0),
-            black_knight: Bitboard(0),
-            black_bishop: Bitboard(0),
-            black_king: Bitboard(0),
-            black_queen: Bitboard(0),
-            black_pawn: Bitboard(0),
-        }
+        Self([Bitboard(0); 12])
     }
 }
 
 impl Default for Board {
     fn default() -> Self {
         Fen::new(String::from(fen::STARTING_POS)).unwrap()
+    }
+}
+
+const BOARD_STRING_LENGTH: usize = 19 * 9;
+
+impl fmt::Display for Board {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut pieces = ['.'; 64];
+        for piece in PIECE_ITEMS {
+            let mut bb = self.0[piece as usize];
+            while bb.0 > 0 {
+                let i = bb.pop_lsb().unwrap();
+                pieces[i] = CHAR_PIECES[piece as usize];
+            }
+        }
+
+        let mut formatted = String::with_capacity(BOARD_STRING_LENGTH);
+        for rank in (0..8).rev() {
+            let mut rank_string = String::with_capacity(18);
+            rank_string.push_str(format!("{}  ", rank + 1).as_str());
+            for file in 0..8 {
+                rank_string.push(pieces[rank * 8 + file]);
+                if file < 7 {
+                    rank_string.push(' ');
+                } else {
+                    rank_string.push('\n');
+                }
+            }
+            formatted.push_str(rank_string.as_str());
+        }
+        formatted.push('\n');
+        formatted.push_str("   A B C D E F G H");
+
+        write!(f, "{}", formatted)
     }
 }
 
@@ -72,21 +95,20 @@ mod tests {
     #[test]
     fn fen_starting_pos_test() {
         let board = Board::default();
-        let expected = Board {
-            white_rook: Bitboard(0b10000001),
-            white_knight: Bitboard(0b01000010),
-            white_bishop: Bitboard(0b00100100),
-            white_king: Bitboard(0b00010000),
-            white_queen: Bitboard(0b00001000),
-            white_pawn: Bitboard(0b11111111 << 8),
-
-            black_rook: Bitboard(0b10000001 << 56),
-            black_knight: Bitboard(0b01000010 << 56),
-            black_bishop: Bitboard(0b00100100 << 56),
-            black_king: Bitboard(0b00010000 << 56),
-            black_queen: Bitboard(0b00001000 << 56),
-            black_pawn: Bitboard(0b11111111 << 48),
-        };
+        let expected = Board([
+            Bitboard(0b10000001),
+            Bitboard(0b01000010),
+            Bitboard(0b00100100),
+            Bitboard(0b00010000),
+            Bitboard(0b00001000),
+            Bitboard(0b11111111 << 8),
+            Bitboard(0b10000001 << 56),
+            Bitboard(0b01000010 << 56),
+            Bitboard(0b00100100 << 56),
+            Bitboard(0b00010000 << 56),
+            Bitboard(0b00001000 << 56),
+            Bitboard(0b11111111 << 48),
+        ]);
         assert_eq!(board, expected);
     }
 }

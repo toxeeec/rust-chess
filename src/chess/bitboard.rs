@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub struct Bitboard(pub u64);
 
 const BITBOARD_STRING_LENGTH: usize = 16 * 8 - 1;
@@ -35,11 +35,13 @@ impl Bitboard {
         self.0 |= 1 << i;
     }
 
+    //TODO: get_lsb
     //returns index of lsb
-    pub fn pop_lsb(&mut self) -> Option<u32> {
-        let (mut n, mut i) = (self.0, 0);
+    pub fn pop_lsb(&mut self) -> Option<usize> {
+        let (mut i, mut n) = (0, self.0);
         for _ in 0..64 {
             if n & 1 == 1 {
+                self.0 &= !(1 << i);
                 return Some(i);
             } else {
                 n >>= 1;
@@ -72,7 +74,7 @@ mod tests {
     #[case(1 << 63, Some(63))]
     #[case(0b10100000, Some(5))]
     #[case(0, None)]
-    fn pop_lsb_test(#[case] bb: u64, #[case] expected: Option<u32>) {
+    fn pop_lsb_test(#[case] bb: u64, #[case] expected: Option<usize>) {
         let mut bb = Bitboard(bb);
         assert_eq!(expected, bb.pop_lsb());
     }

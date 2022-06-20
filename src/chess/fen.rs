@@ -1,3 +1,4 @@
+use super::board::CHAR_PIECES;
 use super::Board;
 
 pub const STARTING_POS: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -10,8 +11,8 @@ impl Fen {
         let mut board = Board::empty();
         let mut square = 56;
         for p in fen[0].chars() {
-            println!("{} {}", p, square);
-            if let Some(bb) = board.bitboard_from_char(p) {
+            if let Some(i) = CHAR_PIECES.iter().position(|&x| x == p) {
+                let bb = &mut board.0[i];
                 bb.set(square);
                 square += 1;
             } else {
