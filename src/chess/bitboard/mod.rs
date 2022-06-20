@@ -31,3 +31,8 @@ impl fmt::Display for Bitboard {
         write!(f, "{}", formatted)
     }
 }
+
+const FILE_A: Bitboard = Bitboard(0x0101010101010101);
+const FILE_H: Bitboard = Bitboard(0x8080808080808080);
+const RANK_1: Bitboard = Bitboard(0b11111111);
+const RANK_8: Bitboard = Bitboard(0b11111111 << 56);
