@@ -13,7 +13,7 @@ impl Fen {
         for p in fen[0].chars() {
             if let Some(i) = CHAR_PIECES.iter().position(|&x| x == p) {
                 let bb = &mut board.0[i];
-                bb.set(square);
+                bb.set(square as usize);
                 square += 1;
             } else {
                 match p {

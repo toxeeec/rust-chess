@@ -30,35 +30,43 @@ impl fmt::Display for Bitboard {
 }
 
 impl Bitboard {
-    pub fn set(&mut self, i: u32) {
+    pub fn set(&mut self, i: usize) {
         assert!(i < 64);
         self.0 |= 1 << i;
     }
 
-    pub fn get(&self, i: u32) -> u64 {
+    pub fn get(self, i: usize) -> u64 {
         assert!(i < 64);
         self.0 >> i & 1
     }
 
-    pub fn clear(&mut self, i: u32) {
+    pub fn clear(&mut self, i: usize) {
         assert!(i < 64);
         self.0 &= !(1 << i);
     }
 
-    //TODO: get_lsb
-    //returns index of lsb
-    pub fn pop_lsb(&mut self) -> Option<usize> {
-        let (mut i, mut n) = (0, self.0);
+    pub fn get_lsb(mut self) -> Option<usize> {
+        let mut i = 0;
         for _ in 0..64 {
-            if n & 1 == 1 {
-                self.0 &= !(1 << i);
+            if self.0 & 1 == 1 {
                 return Some(i);
             } else {
-                n >>= 1;
+                self.0 >>= 1;
                 i += 1;
             }
         }
         None
+    }
+
+    pub fn pop_lsb(&mut self) -> Option<usize> {
+        let lsb = self.get_lsb();
+        match lsb {
+            Some(lsb) => {
+                self.clear(lsb);
+                Some(lsb)
+            }
+            None => None,
+        }
     }
 }
 
@@ -73,7 +81,7 @@ mod tests {
     #[case(0b10111111, 6, u8::MAX.into())]
     #[should_panic]
     #[case(0, 64, 0)]
-    fn set_test(#[case] bb: u64, #[case] i: u32, #[case] expected: u64) {
+    fn set_test(#[case] bb: u64, #[case] i: usize, #[case] expected: u64) {
         let mut bb = Bitboard(bb);
         bb.set(i);
         assert_eq!(expected, bb.0);
@@ -85,7 +93,7 @@ mod tests {
     #[case(0b11001100, 6, 1)]
     #[should_panic]
     #[case(0, 64, 0)]
-    fn get_test(#[case] bb: u64, #[case] i: u32, #[case] expected: u64) {
+    fn get_test(#[case] bb: u64, #[case] i: usize, #[case] expected: u64) {
         let bb = Bitboard(bb);
         assert_eq!(expected, bb.get(i));
     }
@@ -96,19 +104,29 @@ mod tests {
     #[case(0b11001100, 6, 0b10001100)]
     #[should_panic]
     #[case(0, 64, 0)]
-    fn clear_test(#[case] bb: u64, #[case] i: u32, #[case] expected: u64) {
+    fn clear_test(#[case] bb: u64, #[case] i: usize, #[case] expected: u64) {
         let mut bb = Bitboard(bb);
         bb.clear(i);
         assert_eq!(expected, bb.0);
     }
-
     #[rstest]
     #[case(1, Some(0))]
     #[case(1 << 63, Some(63))]
     #[case(0b10100000, Some(5))]
     #[case(0, None)]
-    fn pop_lsb_test(#[case] bb: u64, #[case] expected: Option<usize>) {
+    fn get_lsb_test(#[case] bb: u64, #[case] expected: Option<usize>) {
+        let bb = Bitboard(bb);
+        assert_eq!(expected, bb.get_lsb());
+    }
+
+    #[rstest]
+    #[case(1, 0)]
+    #[case(1 << 63, 0)]
+    #[case(0b10100000, 0b10000000)]
+    #[case(0, 0)]
+    fn pop_lsb_test(#[case] bb: u64, #[case] expected: u64) {
         let mut bb = Bitboard(bb);
-        assert_eq!(expected, bb.pop_lsb());
+        bb.pop_lsb();
+        assert_eq!(expected, bb.0);
     }
 }
