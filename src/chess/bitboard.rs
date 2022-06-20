@@ -40,6 +40,11 @@ impl Bitboard {
         self.0 >> i & 1
     }
 
+    pub fn clear(&mut self, i: u32) {
+        assert!(i < 64);
+        self.0 &= !(1 << i);
+    }
+
     //TODO: get_lsb
     //returns index of lsb
     pub fn pop_lsb(&mut self) -> Option<usize> {
@@ -83,6 +88,18 @@ mod tests {
     fn get_test(#[case] bb: u64, #[case] i: u32, #[case] expected: u64) {
         let bb = Bitboard(bb);
         assert_eq!(expected, bb.get(i));
+    }
+
+    #[rstest]
+    #[case(0, 0, 0)]
+    #[case(1<<63, 63, 0)]
+    #[case(0b11001100, 6, 0b10001100)]
+    #[should_panic]
+    #[case(0, 64, 0)]
+    fn clear_test(#[case] bb: u64, #[case] i: u32, #[case] expected: u64) {
+        let mut bb = Bitboard(bb);
+        bb.clear(i);
+        assert_eq!(expected, bb.0);
     }
 
     #[rstest]
