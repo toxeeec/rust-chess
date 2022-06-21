@@ -1,5 +1,8 @@
 mod bits;
+mod lookup;
 mod shift;
+
+pub use lookup::KNIGHT;
 
 use std::fmt;
 
@@ -7,6 +10,13 @@ use std::fmt;
 pub struct Bitboard(pub u64);
 
 const BITBOARD_STRING_LENGTH: usize = 16 * 8 - 1;
+
+impl Bitboard {
+    pub const fn from_square(sq: usize) -> Self {
+        assert!(sq < 64);
+        Self(1 << sq)
+    }
+}
 
 impl fmt::Debug for Bitboard {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -36,7 +46,3 @@ const FILE_A: Bitboard = Bitboard(0x0101010101010101);
 const FILE_B: Bitboard = Bitboard(0x0202020202020202);
 const FILE_G: Bitboard = Bitboard(0x4040404040404040);
 const FILE_H: Bitboard = Bitboard(0x8080808080808080);
-const RANK_1: Bitboard = Bitboard(0b11111111);
-const RANK_2: Bitboard = Bitboard(0b11111111 << 8);
-const RANK_7: Bitboard = Bitboard(0b11111111 << 48);
-const RANK_8: Bitboard = Bitboard(0b11111111 << 56);

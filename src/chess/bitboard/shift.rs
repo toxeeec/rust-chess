@@ -11,6 +11,7 @@ pub enum Direction {
     SouthWest,
 }
 
+#[derive(Clone, Copy)]
 pub enum KnightDir {
     NNE,
     NEE,
@@ -22,29 +23,40 @@ pub enum KnightDir {
     NNW,
 }
 
+pub const KNIGHTDIR_ITEMS: [KnightDir; 8] = [
+    KnightDir::NNE,
+    KnightDir::NEE,
+    KnightDir::SEE,
+    KnightDir::SSE,
+    KnightDir::SSW,
+    KnightDir::SWW,
+    KnightDir::NWW,
+    KnightDir::NNW,
+];
+
 impl Bitboard {
-    pub fn shift(&mut self, dir: Direction) {
+    pub const fn shifted(self, dir: Direction) -> Self {
         match dir {
-            Direction::North => *self <<= 8,
-            Direction::South => *self >>= 8,
-            Direction::East => *self = (*self & !FILE_H) << 1,
-            Direction::West => *self = (*self & !FILE_A) >> 1,
-            Direction::NorthEast => *self = (*self & !FILE_H) << 9,
-            Direction::NorthWest => *self = (*self & !FILE_A) << 7,
-            Direction::SouthWest => *self = (*self & !FILE_A) >> 9,
-            Direction::SouthEast => *self = (*self & !FILE_H) >> 7,
+            Direction::North => Bitboard(self.0 << 8),
+            Direction::South => Bitboard(self.0 >> 8),
+            Direction::East => Bitboard((self.0 & !FILE_H.0) << 1),
+            Direction::West => Bitboard((self.0 & !FILE_A.0) >> 1),
+            Direction::NorthEast => Bitboard((self.0 & !FILE_H.0) << 9),
+            Direction::NorthWest => Bitboard((self.0 & !FILE_A.0) << 7),
+            Direction::SouthWest => Bitboard((self.0 & !FILE_A.0) >> 9),
+            Direction::SouthEast => Bitboard((self.0 & !FILE_H.0) >> 7),
         }
     }
-    pub fn knight_shift(&mut self, dir: KnightDir) {
+    pub const fn knightdir_shifted(self, dir: KnightDir) -> Self {
         match dir {
-            KnightDir::NNE => *self = (*self & !FILE_H) << 17,
-            KnightDir::NEE => *self = (*self & !(FILE_G | FILE_H)) << 10,
-            KnightDir::SEE => *self = (*self & !(FILE_G | FILE_H)) >> 6,
-            KnightDir::SSE => *self = (*self & !FILE_H) >> 15,
-            KnightDir::SSW => *self = (*self & !FILE_A) >> 17,
-            KnightDir::SWW => *self = (*self & !(FILE_A | FILE_B)) >> 10,
-            KnightDir::NWW => *self = (*self & !(FILE_A | FILE_B)) << 6,
-            KnightDir::NNW => *self = (*self & !FILE_A) << 15,
+            KnightDir::NNE => Bitboard((self.0 & !FILE_H.0) << 17),
+            KnightDir::NEE => Bitboard((self.0 & !(FILE_G.0 | FILE_H.0)) << 10),
+            KnightDir::SEE => Bitboard((self.0 & !(FILE_G.0 | FILE_H.0)) >> 6),
+            KnightDir::SSE => Bitboard((self.0 & !FILE_H.0) >> 15),
+            KnightDir::SSW => Bitboard((self.0 & !FILE_A.0) >> 17),
+            KnightDir::SWW => Bitboard((self.0 & !(FILE_A.0 | FILE_B.0)) >> 10),
+            KnightDir::NWW => Bitboard((self.0 & !(FILE_A.0 | FILE_B.0)) << 6),
+            KnightDir::NNW => Bitboard((self.0 & !FILE_A.0) << 15),
         }
     }
 }
@@ -65,12 +77,9 @@ mod tests {
     #[case(0b11111111 << 8, Direction::NorthWest, 0b1111111 << 16)]
     #[case(0b11111111 << 8, Direction::SouthEast, 0b11111110)]
     #[case(0b11111111 << 8, Direction::SouthWest, 0b1111111)]
-    fn shift_test(#[case] bb: u64, #[case] direction: Direction, #[case] expected: u64) {
-        let mut bb = Bitboard(bb);
-        bb.shift(direction);
-        let expected = Bitboard(expected);
-
-        assert_eq!(expected, bb);
+    fn shifted_test(#[case] bb: u64, #[case] dir: Direction, #[case] expected: u64) {
+        let bb = Bitboard(bb);
+        assert_eq!(Bitboard(expected), bb.shifted(dir));
     }
 
     #[rstest]
@@ -106,11 +115,9 @@ mod tests {
     #[case(1 << 7, KnightDir::NNW, 1 << 22)]
     #[case(1 << 55, KnightDir::NNW, 0)]
     #[case(1 << 63, KnightDir::NNW, 0)]
-    fn knight_shift_test(#[case] bb: u64, #[case] direction: KnightDir, #[case] expected: u64) {
-        let mut bb = Bitboard(bb);
-        bb.knight_shift(direction);
-        let expected = Bitboard(expected);
+    fn knight_shift_test(#[case] bb: u64, #[case] dir: KnightDir, #[case] expected: u64) {
+        let bb = Bitboard(bb);
 
-        assert_eq!(expected, bb);
+        assert_eq!(Bitboard(expected), bb.knightdir_shifted(dir));
     }
 }
