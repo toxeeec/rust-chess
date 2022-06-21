@@ -3,6 +3,5 @@ mod board;
 mod fen;
 
 pub use bitboard::Bitboard;
-pub use bitboard::KNIGHT;
 pub use board::Board;
 pub use fen::Fen;

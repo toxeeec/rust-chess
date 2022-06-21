@@ -1,5 +1,6 @@
 use super::{Bitboard, FILE_A, FILE_B, FILE_G, FILE_H};
 
+#[derive(Clone, Copy)]
 pub enum Direction {
     North,
     East,
@@ -10,6 +11,17 @@ pub enum Direction {
     SouthEast,
     SouthWest,
 }
+
+pub const DIRECTION_ITEMS: [Direction; 8] = [
+    Direction::North,
+    Direction::East,
+    Direction::South,
+    Direction::West,
+    Direction::NorthEast,
+    Direction::NorthWest,
+    Direction::SouthEast,
+    Direction::SouthWest,
+];
 
 #[derive(Clone, Copy)]
 pub enum KnightDir {

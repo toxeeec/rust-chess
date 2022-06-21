@@ -1,8 +1,6 @@
 mod bits;
-mod lookup;
+pub(crate) mod lookup;
 mod shift;
-
-pub use lookup::KNIGHT;
 
 use std::fmt;
 
