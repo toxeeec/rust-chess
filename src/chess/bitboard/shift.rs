@@ -71,6 +71,14 @@ impl Bitboard {
             KnightDir::NNW => Bitboard((self.0 & !FILE_A.0) << 15),
         }
     }
+
+    pub const fn shifted_forward<const IS_WHITE: bool>(self) -> Self {
+        if IS_WHITE {
+            self.shifted(Direction::North)
+        } else {
+            self.shifted(Direction::South)
+        }
+    }
 }
 
 #[cfg(test)]
@@ -129,7 +137,22 @@ mod tests {
     #[case(1 << 63, KnightDir::NNW, 0)]
     fn knight_shift_test(#[case] bb: u64, #[case] dir: KnightDir, #[case] expected: u64) {
         let bb = Bitboard(bb);
-
         assert_eq!(Bitboard(expected), bb.knightdir_shifted(dir));
+    }
+
+    #[test]
+    fn shifted_forward_white_test() {
+        let bb = Bitboard(0b11111111 << 8);
+        let expected = Bitboard(0b11111111 << 16);
+
+        assert_eq!(expected, bb.shifted_forward::<true>());
+    }
+
+    #[test]
+    fn shifted_forward_black_test() {
+        let bb = Bitboard(0b11111111 << 8);
+        let expected = Bitboard(0b11111111);
+
+        assert_eq!(expected, bb.shifted_forward::<false>());
     }
 }
