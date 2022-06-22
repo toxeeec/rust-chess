@@ -1,5 +1,5 @@
-use super::{
-    shift::{DIRECTION_ITEMS, KNIGHTDIR_ITEMS},
+use crate::chess::{
+    bitboard::shift::{DIRECTION_ITEMS, KNIGHTDIR_ITEMS},
     Bitboard,
 };
 
@@ -18,6 +18,7 @@ const fn knight() -> [Bitboard; 64] {
     bbs
 }
 
+//TODO: castling, check, checkmate
 const fn king() -> [Bitboard; 64] {
     let mut bbs = [Bitboard(0); 64];
     let mut sq = 0;

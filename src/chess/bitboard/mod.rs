@@ -1,6 +1,5 @@
 mod bits;
-pub(crate) mod lookup;
-mod shift;
+pub(crate) mod shift;
 
 use std::fmt;
 

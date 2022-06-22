@@ -144,7 +144,6 @@ mod tests {
     fn shifted_forward_white_test() {
         let bb = Bitboard(0b11111111 << 8);
         let expected = Bitboard(0b11111111 << 16);
-
         assert_eq!(expected, bb.shifted_forward::<true>());
     }
 
