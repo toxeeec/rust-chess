@@ -1,6 +1,5 @@
 use super::fen;
 use super::Bitboard;
-use super::Fen;
 use std::fmt;
 
 #[derive(Clone, Copy)]
@@ -48,7 +47,7 @@ impl Board {
 
 impl Default for Board {
     fn default() -> Self {
-        Fen::new(String::from(fen::STARTING_POS)).unwrap()
+        Self::from_fen(String::from(fen::STARTING_POS)).unwrap()
     }
 }
 

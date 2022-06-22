@@ -3,10 +3,8 @@ use super::Board;
 
 pub const STARTING_POS: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-pub struct Fen(pub String);
-
-impl Fen {
-    pub fn new(fen: String) -> Result<Board, String> {
+impl Board {
+    pub fn from_fen(fen: String) -> Result<Board, String> {
         let fen: Vec<&str> = fen.split(" ").collect();
         let mut board = Board::empty();
         let mut square = 56;
