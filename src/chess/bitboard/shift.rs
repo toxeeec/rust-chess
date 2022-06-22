@@ -135,7 +135,7 @@ mod tests {
     #[case(1 << 7, KnightDir::NNW, 1 << 22)]
     #[case(1 << 55, KnightDir::NNW, 0)]
     #[case(1 << 63, KnightDir::NNW, 0)]
-    fn knight_shift_test(#[case] bb: u64, #[case] dir: KnightDir, #[case] expected: u64) {
+    fn knightdir_shifted_test(#[case] bb: u64, #[case] dir: KnightDir, #[case] expected: u64) {
         let bb = Bitboard(bb);
         assert_eq!(Bitboard(expected), bb.knightdir_shifted(dir));
     }
