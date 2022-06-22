@@ -40,7 +40,7 @@ pub const CHAR_PIECES: [char; 12] = ['R', 'N', 'B', 'K', 'Q', 'P', 'r', 'n', 'b'
 pub struct Board(pub [Bitboard; 12]);
 
 impl Board {
-    pub fn empty() -> Self {
+    pub fn new() -> Self {
         Self([Bitboard(0); 12])
     }
 }

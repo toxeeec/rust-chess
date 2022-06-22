@@ -6,7 +6,7 @@ pub const STARTING_POS: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQ
 impl Board {
     pub fn from_fen(fen: String) -> Result<Board, String> {
         let fen: Vec<&str> = fen.split(" ").collect();
-        let mut board = Board::empty();
+        let mut board = Board::new();
         let mut square = 56;
         for p in fen[0].chars() {
             if let Some(i) = CHAR_PIECES.iter().position(|&x| x == p) {
