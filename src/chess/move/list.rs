@@ -4,6 +4,9 @@ use super::r#type::{Flag, Type};
 pub struct List(Vec<Type>);
 
 impl List {
+    pub fn new() -> Self {
+        List(Vec::new())
+    }
     pub fn add(&mut self, from: usize, to: usize, flag: Flag) {
         let move_type = Type::new(from, to, flag);
 

@@ -8,6 +8,9 @@
     0 - special 0
 */
 
+use std::fmt;
+
+#[derive(Debug)]
 #[repr(usize)]
 pub enum Flag {
     Quiet = 0b0,
@@ -20,9 +23,35 @@ pub enum Flag {
     BishopPromotion = 0b1001,
     RookPromotion = 0b1010,
     QueenPromotion = 0b1011,
+    KnightPromotionCapture = 0b1100,
+    BishopPromotionCapture = 0b1101,
+    RookPromotionCapture = 0b1110,
+    QueenPromotionCapture = 0b1111,
 }
 
-#[derive(Debug, PartialEq)]
+impl From<usize> for Flag {
+    fn from(flag: usize) -> Self {
+        match flag {
+            0b0 => Flag::Quiet,
+            0b1 => Flag::DoublePush,
+            0b10 => Flag::KingCastle,
+            0b11 => Flag::QueenCastle,
+            0b100 => Flag::Capture,
+            0b101 => Flag::EnPassant,
+            0b1000 => Flag::KnightPromotion,
+            0b1001 => Flag::BishopPromotion,
+            0b1010 => Flag::RookPromotion,
+            0b1011 => Flag::QueenPromotion,
+            0b1100 => Flag::KnightPromotionCapture,
+            0b1101 => Flag::BishopPromotionCapture,
+            0b1110 => Flag::RookPromotionCapture,
+            0b1111 => Flag::QueenPromotionCapture,
+            _ => panic!("Unknown flag: {:?}", flag),
+        }
+    }
+}
+
+#[derive(PartialEq)]
 pub struct Type(pub usize);
 
 impl Type {
@@ -32,6 +61,28 @@ impl Type {
         move_type |= flag as usize;
 
         Self(move_type)
+    }
+    const fn from(&self) -> usize {
+        self.0 >> 10
+    }
+    const fn to(&self) -> usize {
+        self.0 >> 4 & 0b111111
+    }
+    fn flag(&self) -> Flag {
+        let flag: Flag = (self.0 & 0b1111).into();
+        flag
+    }
+}
+
+impl fmt::Debug for Type {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "(from: {}, to: {}, flag: {:?})",
+            self.from(),
+            self.to(),
+            self.flag()
+        )
     }
 }
 
