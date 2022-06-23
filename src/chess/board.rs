@@ -58,7 +58,7 @@ impl Board {
 
 impl Default for Board {
     fn default() -> Self {
-        Self::from_fen(String::from(fen::STARTING_POS)).unwrap()
+        Self::from_fen(fen::STARTING_POS).unwrap()
     }
 }
 

@@ -4,7 +4,7 @@ use super::Board;
 pub const STARTING_POS: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 impl Board {
-    pub fn from_fen(fen: String) -> Result<Board, String> {
+    pub fn from_fen(fen: &str) -> Result<Board, String> {
         let fen: Vec<&str> = fen.split(" ").collect();
         let mut board = Board::new();
         let mut square = 56;

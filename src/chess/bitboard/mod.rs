@@ -45,4 +45,6 @@ pub const FILE_G: Bitboard = Bitboard(0x4040404040404040);
 pub const FILE_H: Bitboard = Bitboard(0x8080808080808080);
 
 pub const RANK_1: Bitboard = Bitboard(0b11111111);
+pub const RANK_3: Bitboard = Bitboard(0b11111111 << 16);
+pub const RANK_6: Bitboard = Bitboard(0b11111111 << 40);
 pub const RANK_8: Bitboard = Bitboard(0b11111111 << 56);
