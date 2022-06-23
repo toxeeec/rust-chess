@@ -8,7 +8,7 @@
     0 - special 0
 */
 
-#[repr(u16)]
+#[repr(usize)]
 pub enum Flag {
     Quiet = 0b0,
     DoublePush = 0b1,
@@ -23,13 +23,13 @@ pub enum Flag {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct Type(pub u16);
+pub struct Type(pub usize);
 
 impl Type {
-    pub const fn new(from: u16, to: u16, flag: u16) -> Self {
+    pub const fn new(from: usize, to: usize, flag: Flag) -> Self {
         let mut move_type = from << 10;
         move_type |= to << 4;
-        move_type |= flag;
+        move_type |= flag as usize;
 
         Self(move_type)
     }
@@ -45,7 +45,7 @@ mod tests {
         let expected = Type(0b0011000111000001);
         let from = 12; // e2
         let to = 28; // e4
-        let flag = Flag::DoublePush as u16;
+        let flag = Flag::DoublePush;
         assert_eq!(expected, Type::new(from, to, flag));
     }
 }

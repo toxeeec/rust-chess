@@ -39,7 +39,10 @@ impl fmt::Display for Bitboard {
     }
 }
 
-const FILE_A: Bitboard = Bitboard(0x0101010101010101);
-const FILE_B: Bitboard = Bitboard(0x0202020202020202);
-const FILE_G: Bitboard = Bitboard(0x4040404040404040);
-const FILE_H: Bitboard = Bitboard(0x8080808080808080);
+pub const FILE_A: Bitboard = Bitboard(0x0101010101010101);
+pub const FILE_B: Bitboard = Bitboard(0x0202020202020202);
+pub const FILE_G: Bitboard = Bitboard(0x4040404040404040);
+pub const FILE_H: Bitboard = Bitboard(0x8080808080808080);
+
+pub const RANK_1: Bitboard = Bitboard(0b11111111);
+pub const RANK_8: Bitboard = Bitboard(0b11111111 << 56);

@@ -3,7 +3,7 @@ use super::Bitboard;
 use std::fmt;
 
 #[derive(Clone, Copy)]
-enum Piece {
+pub enum Piece {
     WhiteRook,
     WhiteKnight,
     WhiteBishop,

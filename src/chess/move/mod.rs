@@ -1,6 +1,6 @@
 mod list;
 mod lookup;
+mod pawns;
 mod r#type;
 
-pub use lookup::KING;
-pub use lookup::KNIGHT;
+pub use list::List;
