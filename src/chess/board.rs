@@ -40,8 +40,19 @@ pub const CHAR_PIECES: [char; 12] = ['R', 'N', 'B', 'K', 'Q', 'P', 'r', 'n', 'b'
 pub struct Board(pub [Bitboard; 12]);
 
 impl Board {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self([Bitboard(0); 12])
+    }
+
+    pub const fn empty(&self) -> Bitboard {
+        let mut bb = Bitboard(0);
+        let mut i = 0;
+        while i < 12 {
+            bb.0 |= self.0[i].0;
+            i += 1;
+        }
+        bb.0 = !bb.0;
+        bb
     }
 }
 
@@ -109,5 +120,12 @@ mod tests {
             Bitboard(0b11111111 << 48),
         ]);
         assert_eq!(board, expected);
+    }
+
+    #[test]
+    fn empty_starting_pos_test() {
+        let board = Board::default();
+        let expected = Bitboard(0b11111111111111111111111111111111 << 16);
+        assert_eq!(expected, board.empty());
     }
 }
