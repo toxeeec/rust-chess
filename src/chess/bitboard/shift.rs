@@ -79,6 +79,22 @@ impl Bitboard {
             self.shifted(Direction::South)
         }
     }
+
+    pub const fn shifted_forward_left<const IS_WHITE: bool>(self) -> Self {
+        if IS_WHITE {
+            self.shifted(Direction::NorthWest)
+        } else {
+            self.shifted(Direction::SouthEast)
+        }
+    }
+
+    pub const fn shifted_forward_right<const IS_WHITE: bool>(self) -> Self {
+        if IS_WHITE {
+            self.shifted(Direction::NorthEast)
+        } else {
+            self.shifted(Direction::SouthWest)
+        }
+    }
 }
 
 #[cfg(test)]
@@ -151,7 +167,34 @@ mod tests {
     fn shifted_forward_black_test() {
         let bb = Bitboard(0b11111111 << 8);
         let expected = Bitboard(0b11111111);
-
         assert_eq!(expected, bb.shifted_forward::<false>());
+    }
+
+    #[test]
+    fn shifted_forward_left_white_test() {
+        let bb = Bitboard(0b11111111 << 8);
+        let expected = Bitboard(0b1111111 << 16);
+        assert_eq!(expected, bb.shifted_forward_left::<true>());
+    }
+
+    #[test]
+    fn shifted_forward_left_black_test() {
+        let bb = Bitboard(0b11111111 << 8);
+        let expected = Bitboard(0b11111110);
+        assert_eq!(expected, bb.shifted_forward_left::<false>());
+    }
+
+    #[test]
+    fn shifted_forward_right_white_test() {
+        let bb = Bitboard(0b11111111 << 8);
+        let expected = Bitboard(0b11111110 << 16);
+        assert_eq!(expected, bb.shifted_forward_right::<true>());
+    }
+
+    #[test]
+    fn shifted_forward_right_black_test() {
+        let bb = Bitboard(0b11111111 << 8);
+        let expected = Bitboard(0b1111111);
+        assert_eq!(expected, bb.shifted_forward_right::<false>());
     }
 }

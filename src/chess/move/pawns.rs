@@ -22,41 +22,55 @@ const fn third_rank<const IS_WHITE: bool>() -> Bitboard {
     }
 }
 
-fn add_single_pushes<const IS_WHITE: bool>(mut pushed: Bitboard, list: &mut List) {
-    while pushed.0 > 0 {
-        let to = pushed.pop_lsb().unwrap();
-        let from: usize;
-        if IS_WHITE {
-            from = to - Direction::North as usize;
+fn add_single_pushes<const IS_WHITE: bool>(mut bb: Bitboard, list: &mut List) {
+    while bb.0 > 0 {
+        let to = bb.pop_lsb().unwrap();
+        let from = if IS_WHITE {
+            to - Direction::North as usize
         } else {
-            from = to + Direction::North as usize;
-        }
+            to + Direction::North as usize
+        };
         list.add(from, to, Flag::Quiet);
     }
 }
 
-fn add_double_pushes<const IS_WHITE: bool>(mut pushed: Bitboard, list: &mut List) {
-    while pushed.0 > 0 {
-        let to = pushed.pop_lsb().unwrap();
-        let from: usize;
-        if IS_WHITE {
-            from = to - (Direction::North as usize) * 2;
+fn add_double_pushes<const IS_WHITE: bool>(mut bb: Bitboard, list: &mut List) {
+    while bb.0 > 0 {
+        let to = bb.pop_lsb().unwrap();
+        let from = if IS_WHITE {
+            to - (Direction::North as usize) * 2
         } else {
-            from = to + (Direction::North as usize) * 2;
-        }
+            to + (Direction::North as usize) * 2
+        };
         list.add(from, to, Flag::DoublePush);
+    }
+}
+
+fn add_captures<const IS_WHITE: bool, const IS_LEFT: bool>(mut bb: Bitboard, list: &mut List) {
+    while bb.0 > 0 {
+        let to = bb.pop_lsb().unwrap();
+        let dir = if IS_LEFT {
+            Direction::NorthWest
+        } else {
+            Direction::NorthEast
+        };
+        let from = if IS_WHITE {
+            to - dir as usize
+        } else {
+            to + dir as usize
+        };
+        list.add(from, to, Flag::Capture);
     }
 }
 
 impl Board {
     pub fn add_pawns_moves<const IS_WHITE: bool>(&self, list: &mut List) {
-        let mut pushed: Bitboard;
-        if IS_WHITE {
-            pushed = self.0[Piece::WhitePawn as usize];
+        let bb = if IS_WHITE {
+            self.0[Piece::WhitePawn as usize]
         } else {
-            pushed = self.0[Piece::BlackPawn as usize];
-        }
-        pushed = pushed.shifted_forward::<IS_WHITE>();
+            self.0[Piece::BlackPawn as usize]
+        };
+        let mut pushed = bb.shifted_forward::<IS_WHITE>();
         pushed &= !last_rank::<IS_WHITE>();
         pushed &= self.empty();
         add_single_pushes::<IS_WHITE>(pushed, list);
@@ -66,6 +80,16 @@ impl Board {
         pushed &= self.empty();
         add_double_pushes::<IS_WHITE>(pushed, list);
 
-        //TODO: captures, en passant, promotions, promotion captures
+        let mut shifted = bb.shifted_forward_left::<IS_WHITE>();
+        shifted &= !last_rank::<IS_WHITE>();
+        shifted &= self.enemy::<IS_WHITE>();
+        add_captures::<IS_WHITE, true>(shifted, list);
+
+        shifted = bb.shifted_forward_right::<IS_WHITE>();
+        shifted &= !last_rank::<IS_WHITE>();
+        shifted &= self.enemy::<IS_WHITE>();
+        add_captures::<IS_WHITE, false>(shifted, list);
+
+        //TODO: en passant, promotions, promotion captures
     }
 }

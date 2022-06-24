@@ -54,6 +54,21 @@ impl Board {
         bb.0 = !bb.0;
         bb
     }
+
+    pub const fn enemy<const IS_WHITE: bool>(&self) -> Bitboard {
+        let mut bb = Bitboard(0);
+        let mut i = if IS_WHITE {
+            Piece::BlackRook as usize
+        } else {
+            Piece::WhiteRook as usize
+        };
+        let bound = i + 6;
+        while i < bound {
+            bb.0 |= self.0[i].0;
+            i += 1;
+        }
+        bb
+    }
 }
 
 impl Default for Board {
@@ -127,5 +142,19 @@ mod tests {
         let board = Board::default();
         let expected = Bitboard(0b11111111111111111111111111111111 << 16);
         assert_eq!(expected, board.empty());
+    }
+
+    #[test]
+    fn enemy_starting_pos_white_test() {
+        let board = Board::default();
+        let expected = Bitboard(0b1111111111111111 << 48);
+        assert_eq!(expected, board.enemy::<true>());
+    }
+
+    #[test]
+    fn enemy_starting_pos_black_test() {
+        let board = Board::default();
+        let expected = Bitboard(0b1111111111111111);
+        assert_eq!(expected, board.enemy::<false>());
     }
 }
