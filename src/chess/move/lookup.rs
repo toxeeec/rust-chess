@@ -43,40 +43,25 @@ mod tests {
 
     #[test]
     fn knight_test_corner() {
-        let expected = Bitboard::from_square(10) | Bitboard::from_square(17);
+        let expected = Bitboard::from_squares([10, 17]);
         assert_eq!(expected, KNIGHT[0]);
     }
 
     #[test]
     fn knight_test_center() {
-        let expected = Bitboard::from_square(44)
-            | Bitboard::from_square(37)
-            | Bitboard::from_square(21)
-            | Bitboard::from_square(12)
-            | Bitboard::from_square(10)
-            | Bitboard::from_square(17)
-            | Bitboard::from_square(33)
-            | Bitboard::from_square(42);
+        let expected = Bitboard::from_squares([44, 37, 21, 12, 10, 17, 33, 42]);
         assert_eq!(expected, KNIGHT[27]);
     }
 
     #[test]
     fn king_test_corner() {
-        let expected =
-            Bitboard::from_square(8) | Bitboard::from_square(9) | Bitboard::from_square(1);
+        let expected = Bitboard::from_squares([8, 9, 1]);
         assert_eq!(expected, KING[0]);
     }
 
     #[test]
     fn king_test_center() {
-        let expected = Bitboard::from_square(35)
-            | Bitboard::from_square(36)
-            | Bitboard::from_square(28)
-            | Bitboard::from_square(20)
-            | Bitboard::from_square(19)
-            | Bitboard::from_square(18)
-            | Bitboard::from_square(26)
-            | Bitboard::from_square(34);
+        let expected = Bitboard::from_squares([35, 36, 28, 20, 19, 18, 26, 34]);
         assert_eq!(expected, KING[27]);
     }
 }
