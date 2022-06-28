@@ -6,10 +6,6 @@ const fn max(x: usize, y: usize) -> usize {
     }
 }
 
-pub const fn is_valid(sq: isize) -> bool {
-    sq >= 0 && sq < 64
-}
-
 const fn squares_distances() -> [[usize; 64]; 64] {
     let mut distances = [[0; 64]; 64];
     let mut sq1 = 0;

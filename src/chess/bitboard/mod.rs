@@ -3,7 +3,7 @@ pub(crate) mod shift;
 
 use std::fmt;
 
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Default, PartialEq, Eq, Clone, Copy)]
 pub struct Bitboard(pub u64);
 
 const BITBOARD_STRING_LENGTH: usize = 16 * 8 - 1;
