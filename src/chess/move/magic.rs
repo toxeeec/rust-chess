@@ -110,7 +110,7 @@ fn magics<const IS_ROOK: bool>() -> Vec<Magic> {
             mask,
             magic,
             shift,
-            attacks: vec![Bitboard(0); size],
+            attacks,
         });
     }
     magics
@@ -119,6 +119,22 @@ fn magics<const IS_ROOK: bool>() -> Vec<Magic> {
 lazy_static! {
     static ref ROOK_MAGICS: Vec<Magic> = magics::<true>();
     static ref BISHOP_MAGICS: Vec<Magic> = magics::<false>();
+}
+
+pub fn seen_squares_rook(sq: usize, blockers: Bitboard) -> Bitboard {
+    let index = (blockers.0 & ROOK_MAGICS[sq].mask.0).wrapping_mul(ROOK_MAGICS[sq].magic)
+        >> (64 - ROOK_MAGICS[sq].shift);
+    ROOK_MAGICS[sq].attacks[index as usize]
+}
+
+pub fn seen_squares_bishop(sq: usize, blockers: Bitboard) -> Bitboard {
+    let index = (blockers.0 & BISHOP_MAGICS[sq].mask.0).wrapping_mul(BISHOP_MAGICS[sq].magic)
+        >> (64 - BISHOP_MAGICS[sq].shift);
+    BISHOP_MAGICS[sq].attacks[index as usize]
+}
+
+pub fn seen_squares_queen(sq: usize, blockers: Bitboard) -> Bitboard {
+    seen_squares_rook(sq, blockers) | seen_squares_bishop(sq, blockers)
 }
 
 #[cfg(test)]
@@ -132,8 +148,7 @@ mod tests {
         Bitboard(0),
         Bitboard::from_squares([8, 16, 24, 32, 40, 48, 56, 1, 2, 3, 4, 5, 6, 7])
     )]
-    #[case(0, Bitboard::from_squares([1, 8]),
-           Bitboard::from_squares([1, 8]))]
+    #[case(0, Bitboard::from_squares([1, 8]), Bitboard::from_squares([1, 8]))]
     fn sliding_attacks_rook_test(
         #[case] sq: usize,
         #[case] occ: Bitboard,
@@ -144,11 +159,7 @@ mod tests {
     }
 
     #[rstest]
-    #[case(
-        0,
-        Bitboard(0),
-        Bitboard::from_squares([9, 18, 27, 36, 45, 54, 63])
-    )]
+    #[case(0, Bitboard(0), Bitboard::from_squares([9, 18, 27, 36, 45, 54, 63]))]
     #[case(0, Bitboard::from_square(9), Bitboard::from_square(9))]
     fn sliding_attacks_bishop_test(
         #[case] sq: usize,
@@ -165,10 +176,51 @@ mod tests {
     fn get_relevant_occupancies_rook_test(#[case] sq: usize, #[case] expected: Bitboard) {
         assert_eq!(expected, ROOK_RELEVANT_OCCUPANCIES[sq]);
     }
+
     #[rstest]
     #[case(0, Bitboard::from_squares([9, 18, 27, 36, 45, 54]))]
     #[case(9, Bitboard::from_squares([18, 27, 36, 45, 54]))]
     fn get_relevant_occupancies_bishop_test(#[case] sq: usize, #[case] expected: Bitboard) {
         assert_eq!(expected, BISHOP_RELEVANT_OCCUPANCIES[sq]);
+    }
+
+    #[rstest]
+    #[case(0, Bitboard(0), Bitboard::from_squares([1, 2, 3, 4, 5, 6, 7, 8, 16, 24, 32, 40, 48, 56]))]
+    #[case(0, Bitboard::from_square(8), Bitboard::from_squares([8, 1, 2, 3, 4, 5, 6, 7]))]
+    #[case(0, Bitboard::from_squares([2, 16, 18]), Bitboard::from_squares([1, 2, 8, 16]))]
+    fn seen_squares_rook_test(
+        #[case] sq: usize,
+        #[case] blockers: Bitboard,
+        #[case] expected: Bitboard,
+    ) {
+        assert_eq!(expected, seen_squares_rook(sq, blockers));
+    }
+
+    #[rstest]
+    #[case(9, Bitboard(0), Bitboard::from_squares([0, 2, 16, 18, 27, 36, 45, 54, 63]))]
+    #[case(9, Bitboard::from_square(18), Bitboard::from_squares([0, 2, 16, 18]))]
+    #[case(0, Bitboard::from_squares([2, 16, 18]), Bitboard::from_squares([9, 18]))]
+    fn seen_squares_bishop_test(
+        #[case] sq: usize,
+        #[case] blockers: Bitboard,
+        #[case] expected: Bitboard,
+    ) {
+        assert_eq!(expected, seen_squares_bishop(sq, blockers));
+    }
+
+    #[rstest]
+    #[case(0, Bitboard(0), Bitboard::from_squares([1, 2, 3, 4, 5, 6, 7, 8, 16, 24, 32, 40, 48, 56, 9, 18, 27, 36, 45, 54, 63]))]
+    #[case(0, Bitboard::from_squares([2, 16, 18]), Bitboard::from_squares([8, 16, 9, 18, 1, 2]))]
+    fn seen_squares_queen_test(
+        #[case] sq: usize,
+        #[case] blockers: Bitboard,
+        #[case] expected: Bitboard,
+    ) {
+        println!("{}\n", Bitboard::from_squares([2, 16, 18]));
+        println!("{}\n", expected);
+        println!("{}\n", seen_squares_rook(sq, blockers));
+        println!("{}\n", seen_squares_bishop(sq, blockers));
+        println!("{}\n", seen_squares_queen(sq, blockers));
+        assert_eq!(expected, seen_squares_queen(sq, blockers));
     }
 }
