@@ -62,6 +62,7 @@ pub struct Magic {
     pub attacks: Vec<Bitboard>,
 }
 
+//TODO: move to external crate
 fn magics<const IS_ROOK: bool>() -> Vec<Magic> {
     let mut rng = rand::thread_rng();
     let mut magics: Vec<Magic> = Vec::with_capacity(64);

@@ -1,5 +1,13 @@
-const fn max(x: usize, y: usize) -> usize {
+pub const fn max(x: usize, y: usize) -> usize {
     if x > y {
+        x
+    } else {
+        y
+    }
+}
+
+pub const fn min(x: usize, y: usize) -> usize {
+    if x < y {
         x
     } else {
         y

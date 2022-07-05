@@ -1,5 +1,6 @@
 use crate::chess::{
-    bitboard::shift::{DIRECTION_ITEMS, KNIGHTDIR_ITEMS},
+    bitboard::shift::{Direction, DIRECTION_ITEMS, KNIGHTDIR_ITEMS},
+    square::{max, min},
     Bitboard,
 };
 
@@ -37,9 +38,52 @@ const fn king() -> [Bitboard; 64] {
 pub const KNIGHT: [Bitboard; 64] = knight();
 pub const KING: [Bitboard; 64] = king();
 
+const fn check_path() -> [Bitboard; 4096] {
+    let mut bbs = [Bitboard(0); 4096];
+    let mut king_sq = 0;
+    while king_sq < 64 {
+        let mut enemy_sq = 0;
+        while enemy_sq < 64 {
+            let diff = max(king_sq, enemy_sq) - min(king_sq, enemy_sq);
+            let dir = if diff == 0 {
+                enemy_sq += 1;
+                continue;
+            } else if diff < 8 {
+                Direction::East
+            } else if diff % 8 == 0 {
+                Direction::North
+            } else if diff % 7 == 0 {
+                Direction::NorthWest
+            } else if diff % 9 == 0 {
+                Direction::NorthEast
+            } else {
+                enemy_sq += 1;
+                continue;
+            };
+            let mut sq = king_sq;
+            let mut bb = Bitboard(0);
+            while sq != enemy_sq {
+                if king_sq < enemy_sq {
+                    sq += dir as usize;
+                } else {
+                    sq -= dir as usize;
+                }
+                bb.0 |= Bitboard::from_square(sq).0;
+            }
+            bbs[king_sq * 64 + enemy_sq] = bb;
+            enemy_sq += 1;
+        }
+        king_sq += 1;
+    }
+    bbs
+}
+
+pub const CHECK_PATH: [Bitboard; 4096] = check_path();
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
 
     #[test]
     fn knight_test_corner() {
@@ -63,5 +107,20 @@ mod tests {
     fn king_test_center() {
         let expected = Bitboard::from_squares([35, 36, 28, 20, 19, 18, 26, 34]);
         assert_eq!(expected, KING[27]);
+    }
+
+    #[rstest]
+    #[case(0, 0, Bitboard(0))]
+    #[case(0, 3, Bitboard::from_squares([1, 2, 3]))]
+    #[case(0, 24, Bitboard::from_squares([8, 16, 24]))]
+    #[case(0, 27, Bitboard::from_squares([9, 18, 27]))]
+    #[case(24, 3, Bitboard::from_squares([3, 10, 17]))]
+    #[case(0, 25, Bitboard(0))]
+    fn check_path_test(
+        #[case] king_sq: usize,
+        #[case] enemy_sq: usize,
+        #[case] expected: Bitboard,
+    ) {
+        assert_eq!(expected, CHECK_PATH[king_sq * 64 + enemy_sq]);
     }
 }
