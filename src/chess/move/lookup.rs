@@ -78,12 +78,60 @@ const fn check_path() -> [Bitboard; 4096] {
     bbs
 }
 
-pub const CHECK_PATH: [Bitboard; 4096] = check_path();
+const CHECK_PATH: [Bitboard; 4096] = check_path();
+
+const fn square_behind() -> [Bitboard; 4096] {
+    let mut bbs = [Bitboard(0); 4096];
+    let mut king_sq = 0;
+    while king_sq < 64 {
+        let mut enemy_sq = 0;
+        while enemy_sq < 64 {
+            let diff = max(king_sq, enemy_sq) - min(king_sq, enemy_sq);
+            let mut dir = if diff == 0 {
+                enemy_sq += 1;
+                continue;
+            } else if diff < 8 {
+                Direction::East
+            } else if diff % 8 == 0 {
+                Direction::North
+            } else if diff % 7 == 0 {
+                Direction::NorthWest
+            } else if diff % 9 == 0 {
+                Direction::NorthEast
+            } else {
+                enemy_sq += 1;
+                continue;
+            };
+            if king_sq < enemy_sq {
+                dir = dir.opposite();
+            }
+            let bb = Bitboard::from_square(king_sq).shifted(dir);
+            bbs[king_sq * 64 + enemy_sq] = bb;
+            enemy_sq += 1;
+        }
+        king_sq += 1;
+    }
+    bbs
+}
+
+const fn pin_path() -> [Bitboard; 4096] {
+    let mut bbs = CHECK_PATH;
+    let behind = square_behind();
+    let mut i = 0;
+    while i < 4096 {
+        bbs[i].0 |= behind[i].0;
+        i += 1;
+    }
+    bbs
+}
+
+const PIN_PATH: [Bitboard; 4096] = pin_path();
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use rstest::rstest;
+    const SQUARE_BEHIND: [Bitboard; 4096] = square_behind();
 
     #[test]
     fn knight_test_corner() {
@@ -122,5 +170,30 @@ mod tests {
         #[case] expected: Bitboard,
     ) {
         assert_eq!(expected, CHECK_PATH[king_sq * 64 + enemy_sq]);
+    }
+
+    #[rstest]
+    #[case(0, 0, Bitboard(0))]
+    #[case(0, 1, Bitboard(0))]
+    #[case(0, 9, Bitboard(0))]
+    #[case(63, 7, Bitboard(0))]
+    #[case(1, 2, Bitboard::from_square(0))]
+    fn square_behind_test(
+        #[case] king_sq: usize,
+        #[case] enemy_sq: usize,
+        #[case] expected: Bitboard,
+    ) {
+        assert_eq!(expected, SQUARE_BEHIND[king_sq * 64 + enemy_sq]);
+    }
+
+    #[rstest]
+    #[case(0, 0, Bitboard(0))]
+    #[case(0, 3, Bitboard::from_squares([1, 2, 3]))]
+    #[case(8, 24, Bitboard::from_squares([0, 16, 24]))]
+    #[case(18, 27, Bitboard::from_squares([9, 27]))]
+    #[case(24, 3, Bitboard::from_squares([3, 10, 17]))]
+    #[case(0, 25, Bitboard(0))]
+    fn pin_path_test(#[case] king_sq: usize, #[case] enemy_sq: usize, #[case] expected: Bitboard) {
+        assert_eq!(expected, PIN_PATH[king_sq * 64 + enemy_sq]);
     }
 }

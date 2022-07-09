@@ -12,6 +12,21 @@ pub enum Direction {
     SouthWest = -9,
 }
 
+impl Direction {
+    pub const fn opposite(self) -> Self {
+        match self {
+            Direction::North => Direction::South,
+            Direction::South => Direction::North,
+            Direction::East => Direction::West,
+            Direction::West => Direction::East,
+            Direction::NorthEast => Direction::SouthWest,
+            Direction::NorthWest => Direction::SouthEast,
+            Direction::SouthWest => Direction::NorthEast,
+            Direction::SouthEast => Direction::NorthWest,
+        }
+    }
+}
+
 pub const DIRECTION_ITEMS: [Direction; 8] = [
     Direction::North,
     Direction::East,
