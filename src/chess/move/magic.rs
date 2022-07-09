@@ -217,11 +217,6 @@ mod tests {
         #[case] blockers: Bitboard,
         #[case] expected: Bitboard,
     ) {
-        println!("{}\n", Bitboard::from_squares([2, 16, 18]));
-        println!("{}\n", expected);
-        println!("{}\n", seen_squares_rook(sq, blockers));
-        println!("{}\n", seen_squares_bishop(sq, blockers));
-        println!("{}\n", seen_squares_queen(sq, blockers));
         assert_eq!(expected, seen_squares_queen(sq, blockers));
     }
 }
