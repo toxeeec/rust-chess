@@ -63,33 +63,33 @@ fn add_captures<const IS_WHITE: bool, const IS_LEFT: bool>(mut bb: Bitboard, lis
     }
 }
 
-impl Board {
-    pub fn add_pawns_moves<const IS_WHITE: bool>(&self, list: &mut List) {
+impl List {
+    pub fn add_pawn_moves<const IS_WHITE: bool>(&mut self, board: Board) {
         let bb = if IS_WHITE {
-            self.0[Piece::WhitePawn as usize]
+            board.0[Piece::WhitePawn as usize]
         } else {
-            self.0[Piece::BlackPawn as usize]
+            board.0[Piece::BlackPawn as usize]
         };
         let mut pushed = bb.shifted_forward::<IS_WHITE>();
         pushed &= !last_rank::<IS_WHITE>();
-        pushed &= self.empty();
-        add_single_pushes::<IS_WHITE>(pushed, list);
+        pushed &= board.empty();
+        add_single_pushes::<IS_WHITE>(pushed, self);
 
         pushed &= third_rank::<IS_WHITE>();
         pushed = pushed.shifted_forward::<IS_WHITE>();
-        pushed &= self.empty();
-        add_double_pushes::<IS_WHITE>(pushed, list);
+        pushed &= board.empty();
+        add_double_pushes::<IS_WHITE>(pushed, self);
 
         let mut shifted = bb.shifted_forward_left::<IS_WHITE>();
         shifted &= !last_rank::<IS_WHITE>();
-        shifted &= self.enemy::<IS_WHITE>();
-        add_captures::<IS_WHITE, true>(shifted, list);
+        shifted &= board.enemy::<IS_WHITE>();
+        add_captures::<IS_WHITE, true>(shifted, self);
 
         shifted = bb.shifted_forward_right::<IS_WHITE>();
         shifted &= !last_rank::<IS_WHITE>();
-        shifted &= self.enemy::<IS_WHITE>();
-        add_captures::<IS_WHITE, false>(shifted, list);
+        shifted &= board.enemy::<IS_WHITE>();
+        add_captures::<IS_WHITE, false>(shifted, self);
 
-        //TODO: en passant, promotions, promotion captures
+        //TODO: en passant, promotions, promotion captures, checks
     }
 }

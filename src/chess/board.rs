@@ -1,4 +1,3 @@
-use super::fen;
 use super::Bitboard;
 use std::fmt;
 
@@ -36,7 +35,7 @@ const PIECE_ITEMS: [Piece; 12] = [
 
 pub const CHAR_PIECES: [char; 12] = ['R', 'N', 'B', 'K', 'Q', 'P', 'r', 'n', 'b', 'k', 'q', 'p'];
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Board(pub [Bitboard; 12]);
 
 impl Board {
@@ -68,12 +67,6 @@ impl Board {
             i += 1;
         }
         bb
-    }
-}
-
-impl Default for Board {
-    fn default() -> Self {
-        Self::from_fen(fen::STARTING_POS).unwrap()
     }
 }
 
@@ -113,13 +106,13 @@ impl fmt::Display for Board {
 
 #[cfg(test)]
 mod tests {
-    use crate::chess::Bitboard;
+    use crate::chess::{game::Game, Bitboard};
 
     use super::*;
 
     #[test]
     fn fen_starting_pos_test() {
-        let board = Board::default();
+        let board = Game::new().board;
         let expected = Board([
             Bitboard(0b10000001),
             Bitboard(0b01000010),
@@ -139,21 +132,21 @@ mod tests {
 
     #[test]
     fn empty_starting_pos_test() {
-        let board = Board::default();
+        let board = Game::new().board;
         let expected = Bitboard(0b11111111111111111111111111111111 << 16);
         assert_eq!(expected, board.empty());
     }
 
     #[test]
     fn enemy_starting_pos_white_test() {
-        let board = Board::default();
+        let board = Game::new().board;
         let expected = Bitboard(0b1111111111111111 << 48);
         assert_eq!(expected, board.enemy::<true>());
     }
 
     #[test]
     fn enemy_starting_pos_black_test() {
-        let board = Board::default();
+        let board = Game::new().board;
         let expected = Bitboard(0b1111111111111111);
         assert_eq!(expected, board.enemy::<false>());
     }

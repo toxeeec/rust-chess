@@ -13,7 +13,7 @@ pub enum Direction {
 }
 
 impl Direction {
-    pub const fn opposite(self) -> Self {
+    pub const fn opposite(&self) -> Self {
         match self {
             Direction::North => Direction::South,
             Direction::South => Direction::North,
@@ -62,7 +62,7 @@ pub const KNIGHTDIR_ITEMS: [KnightDir; 8] = [
 ];
 
 impl Bitboard {
-    pub const fn shifted(self, dir: Direction) -> Self {
+    pub const fn shifted(&self, dir: Direction) -> Self {
         match dir {
             Direction::North => Bitboard(self.0 << 8),
             Direction::South => Bitboard(self.0 >> 8),
@@ -74,7 +74,7 @@ impl Bitboard {
             Direction::SouthEast => Bitboard((self.0 & !FILE_H.0) >> 7),
         }
     }
-    pub const fn knightdir_shifted(self, dir: KnightDir) -> Self {
+    pub const fn knightdir_shifted(&self, dir: KnightDir) -> Self {
         match dir {
             KnightDir::NNE => Bitboard((self.0 & !FILE_H.0) << 17),
             KnightDir::NEE => Bitboard((self.0 & !(FILE_G.0 | FILE_H.0)) << 10),
@@ -87,7 +87,7 @@ impl Bitboard {
         }
     }
 
-    pub const fn shifted_forward<const IS_WHITE: bool>(self) -> Self {
+    pub const fn shifted_forward<const IS_WHITE: bool>(&self) -> Self {
         if IS_WHITE {
             self.shifted(Direction::North)
         } else {
@@ -95,7 +95,7 @@ impl Bitboard {
         }
     }
 
-    pub const fn shifted_forward_left<const IS_WHITE: bool>(self) -> Self {
+    pub const fn shifted_forward_left<const IS_WHITE: bool>(&self) -> Self {
         if IS_WHITE {
             self.shifted(Direction::NorthWest)
         } else {
@@ -103,7 +103,7 @@ impl Bitboard {
         }
     }
 
-    pub const fn shifted_forward_right<const IS_WHITE: bool>(self) -> Self {
+    pub const fn shifted_forward_right<const IS_WHITE: bool>(&self) -> Self {
         if IS_WHITE {
             self.shifted(Direction::NorthEast)
         } else {

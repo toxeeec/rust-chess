@@ -1,3 +1,4 @@
+mod figures;
 mod list;
 mod lookup;
 mod magic;
