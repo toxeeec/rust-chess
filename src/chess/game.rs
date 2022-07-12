@@ -29,9 +29,9 @@ impl Game {
             Err(e) => return Err(e),
         };
         let move_list = if state.is_white {
-            List::generate::<true>(board)
+            List::generate::<true>(board, state)
         } else {
-            List::generate::<false>(board)
+            List::generate::<false>(board, state)
         };
         Ok(Self {
             board,

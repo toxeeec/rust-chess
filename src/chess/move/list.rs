@@ -1,4 +1,4 @@
-use crate::chess::Board;
+use crate::chess::{game::Game, state::State, Board};
 
 use super::r#type::{Flag, Type};
 
@@ -6,10 +6,15 @@ use super::r#type::{Flag, Type};
 pub struct List(pub Vec<Type>);
 
 impl List {
-    pub fn generate<const IS_WHITE: bool>(board: Board) -> Self {
+    pub fn generate<const IS_WHITE: bool>(board: Board, state: State) -> Self {
         let mut list = Self(Vec::new());
+        list.add_king_moves::<IS_WHITE>(board, state);
         list.add_pawn_moves::<IS_WHITE>(board);
         list.add_knight_moves::<IS_WHITE>(board);
+        list.add_bishop_moves::<IS_WHITE>(board);
+        list.add_rook_moves::<IS_WHITE>(board);
+        list.add_queen_moves::<IS_WHITE>(board);
+        //44
 
         list
     }
@@ -25,20 +30,7 @@ mod tests {
 
     use crate::chess::game::Game;
 
-    const STARTING_POS_PAWNS: &str = "8/pppppppp/8/8/8/8/PPPPPPPP/8 w KQkq - 0 1";
     const KIWI_POS: &str = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
-
-    #[test]
-    fn list_starting_pos_pawns_white_test() {
-        let game = Game::from_fen(STARTING_POS_PAWNS).unwrap();
-        assert_eq!(16, game.move_list.0.len());
-    }
-
-    #[test]
-    fn list_starting_pos_pawns_black_test() {
-        let game = Game::from_fen(STARTING_POS_PAWNS).unwrap();
-        assert_eq!(16, game.move_list.0.len());
-    }
 
     #[test]
     fn list_starting_pos_test() {
@@ -46,7 +38,6 @@ mod tests {
         assert_eq!(20, game.move_list.0.len());
     }
 
-    //TODO: passing
     #[test]
     fn list_kiwi_pos_test() {
         let game = Game::from_fen(KIWI_POS).unwrap();

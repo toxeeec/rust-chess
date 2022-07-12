@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct State {
     pub is_white: bool,
     pub has_ep_pawn: bool,
