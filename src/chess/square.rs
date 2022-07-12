@@ -34,7 +34,7 @@ const fn squares_distances() -> [[usize; 64]; 64] {
 
 #[derive(Error, Debug, PartialEq)]
 pub enum SquareError {
-    #[error("Length of square name must be 2, but given {0}")]
+    #[error("Expected length: 2, got: {0}")]
     InvalidLength(usize),
     #[error("Invalid file: {0}")]
     InvalidFile(char),

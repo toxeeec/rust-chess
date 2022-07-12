@@ -5,10 +5,17 @@ use super::{
     Board,
 };
 
+#[derive(Debug)]
+pub struct MoveCounter {
+    pub half_clock: usize,
+    pub full: usize,
+}
+
 pub struct Game {
     pub board: Board,
     pub move_list: List,
     pub state: State,
+    pub move_counter: MoveCounter,
 }
 
 impl Game {
@@ -17,8 +24,7 @@ impl Game {
     }
 
     pub fn from_fen(fen: &str) -> Result<Self, FenError> {
-        //TODO: add error handling
-        let (board, state) = match fen::parse(fen) {
+        let (board, state, move_counter) = match fen::parse(fen) {
             Ok(val) => val,
             Err(e) => return Err(e),
         };
@@ -31,6 +37,7 @@ impl Game {
             board,
             move_list,
             state,
+            move_counter,
         })
     }
 }
