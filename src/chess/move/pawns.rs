@@ -4,7 +4,7 @@ use crate::chess::{
     Bitboard, Board,
 };
 
-use super::{list::List, r#type::Flag};
+use super::{list::List, masks::Pins, r#type::Flag};
 
 const fn last_rank<const IS_WHITE: bool>() -> Bitboard {
     if IS_WHITE {
@@ -64,13 +64,23 @@ fn add_captures<const IS_WHITE: bool, const IS_LEFT: bool>(mut bb: Bitboard, lis
 }
 
 impl List {
-    pub fn add_pawn_moves<const IS_WHITE: bool>(&mut self, board: Board, checkmask: Bitboard) {
+    pub fn add_pawn_moves<const IS_WHITE: bool>(
+        &mut self,
+        board: Board,
+        checkmask: Bitboard,
+        pins: Pins,
+    ) {
         let bb = if IS_WHITE {
             board.0[Piece::WhitePawn as usize]
         } else {
             board.0[Piece::BlackPawn as usize]
         };
-        let mut pushed = bb.shifted_forward::<IS_WHITE>();
+
+        let not_diag_pinned = bb & !pins.diag;
+
+        let mut pinned = (not_diag_pinned & pins.hv).shifted_forward::<IS_WHITE>() & pins.hv;
+
+        let mut pushed = (not_diag_pinned & !pins.hv).shifted_forward::<IS_WHITE>() | pinned;
         pushed &= !last_rank::<IS_WHITE>();
         pushed &= board.empty();
         let mut double_pushed = pushed;
@@ -83,13 +93,18 @@ impl List {
         double_pushed &= checkmask;
         add_double_pushes::<IS_WHITE>(double_pushed, self);
 
-        let mut shifted = bb.shifted_forward_left::<IS_WHITE>();
+        let not_hv_pinned = bb & !pins.hv;
+
+        pinned = (not_hv_pinned & pins.diag).shifted_forward_left::<IS_WHITE>() & pins.diag;
+
+        let mut shifted = (not_hv_pinned & !pins.diag).shifted_forward_left::<IS_WHITE>() | pinned;
         shifted &= !last_rank::<IS_WHITE>();
         shifted &= board.enemy::<IS_WHITE>();
         shifted &= checkmask;
         add_captures::<IS_WHITE, true>(shifted, self);
 
-        shifted = bb.shifted_forward_right::<IS_WHITE>();
+        pinned = (not_hv_pinned & pins.diag).shifted_forward_right::<IS_WHITE>() & pins.diag;
+        shifted = (not_hv_pinned & !pins.diag).shifted_forward_right::<IS_WHITE>() | pinned;
         shifted &= !last_rank::<IS_WHITE>();
         shifted &= board.enemy::<IS_WHITE>();
         shifted &= checkmask;

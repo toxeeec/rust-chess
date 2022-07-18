@@ -3,6 +3,7 @@ use crate::chess::{board::Piece, state::State, Bitboard, Board};
 use super::{
     lookup::{KING, KNIGHT},
     magic::{seen_squares_bishop, seen_squares_queen, seen_squares_rook},
+    masks::Pins,
     r#type::Flag,
     List,
 };
@@ -89,7 +90,12 @@ impl List {
         //TODO: check
     }
 
-    pub fn add_knight_moves<const IS_WHITE: bool>(&mut self, board: Board, checkmask: Bitboard) {
+    pub fn add_knight_moves<const IS_WHITE: bool>(
+        &mut self,
+        board: Board,
+        checkmask: Bitboard,
+        pins: Pins,
+    ) {
         let mut bb = if IS_WHITE {
             board.0[Piece::WhiteKnight as usize]
         } else {
@@ -113,7 +119,12 @@ impl List {
         //TODO: checks, pins
     }
 
-    pub fn add_bishop_moves<const IS_WHITE: bool>(&mut self, board: Board, checkmask: Bitboard) {
+    pub fn add_bishop_moves<const IS_WHITE: bool>(
+        &mut self,
+        board: Board,
+        checkmask: Bitboard,
+        pins: Pins,
+    ) {
         let mut bb = if IS_WHITE {
             board.0[Piece::WhiteBishop as usize]
         } else {
@@ -138,7 +149,12 @@ impl List {
         //TODO: checks, pins
     }
 
-    pub fn add_rook_moves<const IS_WHITE: bool>(&mut self, board: Board, checkmask: Bitboard) {
+    pub fn add_rook_moves<const IS_WHITE: bool>(
+        &mut self,
+        board: Board,
+        checkmask: Bitboard,
+        pins: Pins,
+    ) {
         let mut bb = if IS_WHITE {
             board.0[Piece::WhiteRook as usize]
         } else {
@@ -163,7 +179,12 @@ impl List {
         //TODO: checks, pins
     }
 
-    pub fn add_queen_moves<const IS_WHITE: bool>(&mut self, board: Board, checkmask: Bitboard) {
+    pub fn add_queen_moves<const IS_WHITE: bool>(
+        &mut self,
+        board: Board,
+        checkmask: Bitboard,
+        pins: Pins,
+    ) {
         let mut bb = if IS_WHITE {
             board.0[Piece::WhiteQueen as usize]
         } else {

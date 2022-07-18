@@ -1,7 +1,8 @@
-use crate::chess::{state::State, Bitboard, Board};
+use crate::chess::{board::Piece, state::State, Bitboard, Board};
 
 use super::{
-    masks::checkmask,
+    lookup::KING,
+    masks::{checkmask, pinmask},
     r#type::{Flag, Type},
 };
 
@@ -11,14 +12,24 @@ pub struct List(pub Vec<Type>);
 impl List {
     pub fn generate<const IS_WHITE: bool>(board: Board, state: State) -> Self {
         let mut list = Self(Vec::new());
-        let mut banned = Bitboard(0);
+        let king_sq = if IS_WHITE {
+            board.0[Piece::BlackKing as usize]
+        } else {
+            board.0[Piece::WhiteKing as usize]
+        }
+        .pop_lsb()
+        .unwrap();
+
+        let mut banned = KING[king_sq];
+
+        let pins = pinmask::<IS_WHITE>(board);
         let checkmask = checkmask::<IS_WHITE>(board, &mut banned);
         list.add_king_moves::<IS_WHITE>(board, state, banned);
-        list.add_pawn_moves::<IS_WHITE>(board, checkmask);
-        list.add_knight_moves::<IS_WHITE>(board, checkmask);
-        list.add_bishop_moves::<IS_WHITE>(board, checkmask);
-        list.add_rook_moves::<IS_WHITE>(board, checkmask);
-        list.add_queen_moves::<IS_WHITE>(board, checkmask);
+        list.add_pawn_moves::<IS_WHITE>(board, checkmask, pins);
+        list.add_knight_moves::<IS_WHITE>(board, checkmask, pins);
+        list.add_bishop_moves::<IS_WHITE>(board, checkmask, pins);
+        list.add_rook_moves::<IS_WHITE>(board, checkmask, pins);
+        list.add_queen_moves::<IS_WHITE>(board, checkmask, pins);
 
         list
     }
@@ -59,6 +70,9 @@ mod tests {
     #[test]
     fn list_pin_pos_test() {
         let game = Game::from_fen(PIN_POS).unwrap();
+        for m in &game.move_list.0 {
+            println!("{:?}", m);
+        }
         assert_eq!(14, game.move_list.0.len());
     }
 }
