@@ -63,7 +63,7 @@ impl List {
         &mut self,
         board: Board,
         state: State,
-        seen_squares: Bitboard,
+        banned: Bitboard,
     ) {
         let mut bb = if IS_WHITE {
             board.0[Piece::WhiteKing as usize]
@@ -72,7 +72,7 @@ impl List {
         };
 
         let from = bb.pop_lsb().unwrap();
-        let mut moves = KING[from] & board.empty() & !seen_squares;
+        let mut moves = KING[from] & board.empty() & !banned;
         while moves.0 > 0 {
             let to = moves.pop_lsb().unwrap();
             self.add(from, to, Flag::Quiet);
