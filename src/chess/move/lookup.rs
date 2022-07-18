@@ -78,7 +78,7 @@ const fn check_path() -> [Bitboard; 4096] {
     bbs
 }
 
-const CHECK_PATH: [Bitboard; 4096] = check_path();
+pub const CHECK_PATH: [Bitboard; 4096] = check_path();
 
 const fn square_behind() -> [Bitboard; 4096] {
     let mut bbs = [Bitboard(0); 4096];
@@ -125,7 +125,7 @@ const fn pin_path() -> [Bitboard; 4096] {
     bbs
 }
 
-const PIN_PATH: [Bitboard; 4096] = pin_path();
+pub const PIN_PATH: [Bitboard; 4096] = pin_path();
 
 #[cfg(test)]
 mod tests {

@@ -59,7 +59,12 @@ fn add_castle_right<const IS_WHITE: bool>(list: &mut List, board: Board, state: 
 }
 
 impl List {
-    pub fn add_king_moves<const IS_WHITE: bool>(&mut self, board: Board, state: State) {
+    pub fn add_king_moves<const IS_WHITE: bool>(
+        &mut self,
+        board: Board,
+        state: State,
+        seen_squares: Bitboard,
+    ) {
         let mut bb = if IS_WHITE {
             board.0[Piece::WhiteKing as usize]
         } else {
@@ -67,8 +72,7 @@ impl List {
         };
 
         let from = bb.pop_lsb().unwrap();
-        //TODO: dont allow kings next to each other, dont allow moving to seen square
-        let mut moves = KING[from] & board.empty();
+        let mut moves = KING[from] & board.empty() & !seen_squares;
         while moves.0 > 0 {
             let to = moves.pop_lsb().unwrap();
             self.add(from, to, Flag::Quiet);
@@ -84,7 +88,8 @@ impl List {
         add_castle_right::<IS_WHITE>(self, board, state);
         //TODO: check
     }
-    pub fn add_knight_moves<const IS_WHITE: bool>(&mut self, board: Board) {
+
+    pub fn add_knight_moves<const IS_WHITE: bool>(&mut self, board: Board, checkmask: Bitboard) {
         let mut bb = if IS_WHITE {
             board.0[Piece::WhiteKnight as usize]
         } else {
@@ -93,13 +98,13 @@ impl List {
 
         while bb.0 > 0 {
             let from = bb.pop_lsb().unwrap();
-            let mut moves = KNIGHT[from] & board.empty();
+            let mut moves = KNIGHT[from] & board.empty() & checkmask;
             while moves.0 > 0 {
                 let to = moves.pop_lsb().unwrap();
                 self.add(from, to, Flag::Quiet);
             }
 
-            let mut captures = KNIGHT[from] & board.enemy::<IS_WHITE>();
+            let mut captures = KNIGHT[from] & board.enemy::<IS_WHITE>() & checkmask;
             while captures.0 > 0 {
                 let to = captures.pop_lsb().unwrap();
                 self.add(from, to, Flag::Capture);
@@ -108,7 +113,7 @@ impl List {
         //TODO: checks, pins
     }
 
-    pub fn add_bishop_moves<const IS_WHITE: bool>(&mut self, board: Board) {
+    pub fn add_bishop_moves<const IS_WHITE: bool>(&mut self, board: Board, checkmask: Bitboard) {
         let mut bb = if IS_WHITE {
             board.0[Piece::WhiteBishop as usize]
         } else {
@@ -118,13 +123,13 @@ impl List {
         while bb.0 > 0 {
             let from = bb.pop_lsb().unwrap();
             let seen_squares = seen_squares_bishop(from, !board.empty());
-            let mut moves = seen_squares & board.empty();
+            let mut moves = seen_squares & board.empty() & checkmask;
             while moves.0 > 0 {
                 let to = moves.pop_lsb().unwrap();
                 self.add(from, to, Flag::Quiet);
             }
 
-            let mut captures = seen_squares & board.enemy::<IS_WHITE>();
+            let mut captures = seen_squares & board.enemy::<IS_WHITE>() & checkmask;
             while captures.0 > 0 {
                 let to = captures.pop_lsb().unwrap();
                 self.add(from, to, Flag::Capture);
@@ -133,7 +138,7 @@ impl List {
         //TODO: checks, pins
     }
 
-    pub fn add_rook_moves<const IS_WHITE: bool>(&mut self, board: Board) {
+    pub fn add_rook_moves<const IS_WHITE: bool>(&mut self, board: Board, checkmask: Bitboard) {
         let mut bb = if IS_WHITE {
             board.0[Piece::WhiteRook as usize]
         } else {
@@ -143,13 +148,13 @@ impl List {
         while bb.0 > 0 {
             let from = bb.pop_lsb().unwrap();
             let seen_squares = seen_squares_rook(from, !board.empty());
-            let mut moves = seen_squares & board.empty();
+            let mut moves = seen_squares & board.empty() & checkmask;
             while moves.0 > 0 {
                 let to = moves.pop_lsb().unwrap();
                 self.add(from, to, Flag::Quiet);
             }
 
-            let mut captures = seen_squares & board.enemy::<IS_WHITE>();
+            let mut captures = seen_squares & board.enemy::<IS_WHITE>() & checkmask;
             while captures.0 > 0 {
                 let to = captures.pop_lsb().unwrap();
                 self.add(from, to, Flag::Capture);
@@ -158,7 +163,7 @@ impl List {
         //TODO: checks, pins
     }
 
-    pub fn add_queen_moves<const IS_WHITE: bool>(&mut self, board: Board) {
+    pub fn add_queen_moves<const IS_WHITE: bool>(&mut self, board: Board, checkmask: Bitboard) {
         let mut bb = if IS_WHITE {
             board.0[Piece::WhiteQueen as usize]
         } else {
@@ -168,13 +173,13 @@ impl List {
         while bb.0 > 0 {
             let from = bb.pop_lsb().unwrap();
             let seen_squares = seen_squares_queen(from, !board.empty());
-            let mut moves = seen_squares & board.empty();
+            let mut moves = seen_squares & board.empty() & checkmask;
             while moves.0 > 0 {
                 let to = moves.pop_lsb().unwrap();
                 self.add(from, to, Flag::Quiet);
             }
 
-            let mut captures = seen_squares & board.enemy::<IS_WHITE>();
+            let mut captures = seen_squares & board.enemy::<IS_WHITE>() & checkmask;
             while captures.0 > 0 {
                 let to = captures.pop_lsb().unwrap();
                 self.add(from, to, Flag::Capture);
