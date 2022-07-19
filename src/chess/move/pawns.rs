@@ -1,10 +1,11 @@
 use crate::chess::{
     bitboard::{shift::Direction, RANK_1, RANK_3, RANK_6, RANK_8},
     board::Piece,
+    state::State,
     Bitboard, Board,
 };
 
-use super::{list::List, masks::Pins, r#type::Flag};
+use super::{list::List, magic::seen_squares_rook, masks::Pins, r#type::Flag};
 
 const fn last_rank<const IS_WHITE: bool>() -> Bitboard {
     if IS_WHITE {
@@ -63,10 +64,19 @@ fn add_captures<const IS_WHITE: bool, const IS_LEFT: bool>(mut bb: Bitboard, lis
     }
 }
 
+fn add_en_passants(mut bb: Bitboard, list: &mut List, ep_square: usize) {
+    while bb.0 > 0 {
+        let from = bb.pop_lsb().unwrap();
+        list.add(from, ep_square, Flag::EnPassant);
+    }
+}
+
 impl List {
     pub fn add_pawn_moves<const IS_WHITE: bool>(
         &mut self,
         board: Board,
+        state: State,
+        ep_square: usize,
         checkmask: Bitboard,
         pins: Pins,
     ) {
@@ -110,6 +120,52 @@ impl List {
         shifted &= checkmask;
         add_captures::<IS_WHITE, false>(shifted, self);
 
-        //TODO: en passant, promotions, promotion captures, checks, pins
+        if state.has_ep_pawn {
+            let mut can_ep = if IS_WHITE {
+                Bitboard::from_square(ep_square - 7) | Bitboard::from_square(ep_square - 9)
+            } else {
+                Bitboard::from_square(ep_square + 7) | Bitboard::from_square(ep_square + 9)
+            } & not_hv_pinned;
+
+            let ep_pawn = if IS_WHITE {
+                ep_square - 8
+            } else {
+                ep_square + 8
+            };
+
+            while can_ep.0 > 0 {
+                let sq = can_ep.pop_lsb().unwrap();
+
+                let mut queen_or_rook = if IS_WHITE {
+                    board.0[Piece::BlackQueen as usize] | board.0[Piece::BlackRook as usize]
+                } else {
+                    board.0[Piece::WhiteQueen as usize] | board.0[Piece::WhiteRook as usize]
+                };
+
+                let king_bb = if IS_WHITE {
+                    board.0[Piece::WhiteKing as usize]
+                } else {
+                    board.0[Piece::BlackKing as usize]
+                };
+
+                // https://lichess.org/editor/8/8/8/kq1pP1K1/8/8/8/8_w_-_d6_0_1
+                while queen_or_rook.0 > 0 {
+                    let qr_sq = queen_or_rook.pop_lsb().unwrap();
+                    let occ = !board.empty() & !Bitboard::from_squares([sq, ep_pawn]);
+                    if (seen_squares_rook(qr_sq, occ) & king_bb).0 > 0 {
+                        can_ep &= !Bitboard::from_square(sq);
+                        return;
+                    }
+                }
+
+                let is_pinned = (can_ep & pins.diag).0 > 0;
+                let is_ep_square_pinned = (Bitboard::from_square(ep_square) & pins.diag).0 > 0;
+                if !is_pinned || is_ep_square_pinned {
+                    self.add(sq, ep_square, Flag::EnPassant);
+                }
+            }
+        }
+
+        //TODO: promotions, promotion captures
     }
 }

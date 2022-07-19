@@ -223,8 +223,8 @@ fn diag_pins<const IS_WHITE: bool>(board: Board) -> Bitboard {
     while bb.0 > 0 {
         let sq = bb.pop_lsb().unwrap();
 
-        let blockers = seen_squares_bishop(sq, ally);
-        let pinned = seen_squares_bishop(sq, ally & !blockers);
+        let blockers = seen_squares_bishop(sq, ally) & ally;
+        let pinned = seen_squares_bishop(sq, !board.empty() & !blockers);
 
         if pinned & king_bb != Bitboard(0) {
             pins |= PIN_PATH[king_sq * 64 + sq];
@@ -234,7 +234,7 @@ fn diag_pins<const IS_WHITE: bool>(board: Board) -> Bitboard {
     pins
 }
 
-fn hv_pins<const IS_WHITE: bool>(board: Board) -> Bitboard {
+pub fn hv_pins<const IS_WHITE: bool>(board: Board) -> Bitboard {
     let ally = if IS_WHITE {
         board.enemy::<false>()
     } else {
@@ -259,8 +259,8 @@ fn hv_pins<const IS_WHITE: bool>(board: Board) -> Bitboard {
     while rooks.0 > 0 {
         let sq = rooks.pop_lsb().unwrap();
 
-        let blockers = seen_squares_rook(sq, ally);
-        let pinned = seen_squares_rook(sq, ally & !blockers);
+        let blockers = seen_squares_rook(sq, ally) & ally;
+        let pinned = seen_squares_rook(sq, !board.empty() & !blockers);
 
         if pinned & king_bb != Bitboard(0) {
             pins |= PIN_PATH[king_sq * 64 + sq];

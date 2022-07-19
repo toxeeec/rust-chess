@@ -1,5 +1,6 @@
 use super::board::CHAR_PIECES;
-use super::game::MoveCounter;
+use super::game::{Game, MoveCounter};
+use super::r#move::List;
 use super::square::name_to_number;
 use super::state::State;
 use super::Board;
@@ -34,8 +35,7 @@ fn board(pieces: &str) -> Result<Board, FenError> {
     Ok(board)
 }
 
-//TODO: ep square
-fn state(side: &str, castling: &str, ep: &str) -> Result<State, FenError> {
+fn state(side: &str, castling: &str, ep: &str, ep_square: &mut usize) -> Result<State, FenError> {
     let is_white = match side {
         "w" => true,
         "b" => false,
@@ -67,7 +67,10 @@ fn state(side: &str, castling: &str, ep: &str) -> Result<State, FenError> {
         false
     } else {
         match name_to_number(ep) {
-            Ok(_) => true,
+            Ok(sq) => {
+                *ep_square = sq;
+                true
+            }
             Err(_) => return Err(FenError::InvalidField(4)),
         }
     };
@@ -96,15 +99,33 @@ fn moves(half: &str, full: &str) -> Result<MoveCounter, FenError> {
     Ok(MoveCounter { half_clock, full })
 }
 
-pub fn parse(fen: &str) -> Result<(Board, State, MoveCounter), FenError> {
-    let fields: [&str; 6] = match fen.split_whitespace().collect::<Vec<_>>().try_into() {
-        Ok(fields) => fields,
-        Err(_) => return Err(FenError::InvalidLength),
-    };
-    let b = board(fields[0])?;
-    let s = state(fields[1], fields[2], fields[3])?;
-    let m = moves(fields[4], fields[5])?;
-    Ok((b, s, m))
+impl Game {
+    pub fn from_fen(fen: &str) -> Result<Game, FenError> {
+        let fields: [&str; 6] = match fen.split_whitespace().collect::<Vec<_>>().try_into() {
+            Ok(fields) => fields,
+            Err(_) => return Err(FenError::InvalidLength),
+        };
+
+        let board = board(fields[0])?;
+        let mut ep_square = usize::MAX;
+        let state = state(fields[1], fields[2], fields[3], &mut ep_square)?;
+
+        let move_list = if state.is_white {
+            List::generate::<true>(board, state, ep_square)
+        } else {
+            List::generate::<false>(board, state, ep_square)
+        };
+
+        let move_counter = moves(fields[4], fields[5])?;
+
+        Ok(Game {
+            board,
+            state,
+            move_list,
+            ep_square,
+            move_counter,
+        })
+    }
 }
 
 mod tests {
@@ -115,7 +136,7 @@ mod tests {
     #[case(STARTING_POS, true)]
     #[case("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", false)]
     fn parse_test(#[case] fen: &str, #[case] is_ok: bool) {
-        assert_eq!(is_ok, parse(fen).is_ok());
+        assert_eq!(is_ok, Game::from_fen(fen).is_ok());
     }
 
     #[rstest]
@@ -136,7 +157,7 @@ mod tests {
         #[case] ep: &str,
         #[case] is_ok: bool,
     ) {
-        assert_eq!(is_ok, state(side, castling, ep).is_ok());
+        assert_eq!(is_ok, state(side, castling, ep, &mut 0).is_ok());
     }
 
     #[rstest]

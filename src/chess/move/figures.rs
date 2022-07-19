@@ -87,7 +87,6 @@ impl List {
 
         add_castle_left::<IS_WHITE>(self, board, state);
         add_castle_right::<IS_WHITE>(self, board, state);
-        //TODO: check
     }
 
     pub fn add_knight_moves<const IS_WHITE: bool>(
@@ -116,7 +115,6 @@ impl List {
                 self.add(from, to, Flag::Capture);
             }
         }
-        //TODO: checks, pins
     }
 
     pub fn add_bishop_moves<const IS_WHITE: bool>(
@@ -146,7 +144,6 @@ impl List {
                 self.add(from, to, Flag::Capture);
             }
         }
-        //TODO: checks, pins
     }
 
     pub fn add_rook_moves<const IS_WHITE: bool>(
@@ -176,7 +173,6 @@ impl List {
                 self.add(from, to, Flag::Capture);
             }
         }
-        //TODO: checks, pins
     }
 
     pub fn add_queen_moves<const IS_WHITE: bool>(
@@ -206,6 +202,5 @@ impl List {
                 self.add(from, to, Flag::Capture);
             }
         }
-        //TODO: checks, pins
     }
 }
