@@ -47,6 +47,21 @@ fn add_double_pushes<const IS_WHITE: bool>(mut bb: Bitboard, list: &mut List) {
     }
 }
 
+fn add_promotions<const IS_WHITE: bool>(mut bb: Bitboard, list: &mut List) {
+    while bb.0 > 0 {
+        let to = bb.pop_lsb().unwrap();
+        let from = if IS_WHITE {
+            to - (Direction::North as usize) * 2
+        } else {
+            to + (Direction::North as usize) * 2
+        };
+        list.add(from, to, Flag::KnightPromotion);
+        list.add(from, to, Flag::BishopPromotion);
+        list.add(from, to, Flag::RookPromotion);
+        list.add(from, to, Flag::QueenPromotion);
+    }
+}
+
 fn add_captures<const IS_WHITE: bool, const IS_LEFT: bool>(mut bb: Bitboard, list: &mut List) {
     let dir = if IS_LEFT {
         Direction::NorthWest
@@ -61,6 +76,29 @@ fn add_captures<const IS_WHITE: bool, const IS_LEFT: bool>(mut bb: Bitboard, lis
             to + dir as usize
         };
         list.add(from, to, Flag::Capture);
+    }
+}
+
+fn add_promotion_captures<const IS_WHITE: bool, const IS_LEFT: bool>(
+    mut bb: Bitboard,
+    list: &mut List,
+) {
+    let dir = if IS_LEFT {
+        Direction::NorthWest
+    } else {
+        Direction::NorthEast
+    };
+    while bb.0 > 0 {
+        let to = bb.pop_lsb().unwrap();
+        let from = if IS_WHITE {
+            to - dir as usize
+        } else {
+            to + dir as usize
+        };
+        list.add(from, to, Flag::KnightPromotionCapture);
+        list.add(from, to, Flag::BishopPromotionCapture);
+        list.add(from, to, Flag::RookPromotionCapture);
+        list.add(from, to, Flag::QueenPromotionCapture);
     }
 }
 
@@ -91,10 +129,13 @@ impl List {
         let mut pinned = (not_diag_pinned & pins.hv).shifted_forward::<IS_WHITE>() & pins.hv;
 
         let mut pushed = (not_diag_pinned & !pins.hv).shifted_forward::<IS_WHITE>() | pinned;
-        pushed &= !last_rank::<IS_WHITE>();
         pushed &= board.empty();
         let mut double_pushed = pushed;
         pushed &= checkmask;
+        let mut promotions = pushed & last_rank::<IS_WHITE>();
+        add_promotions::<IS_WHITE>(promotions, self);
+
+        pushed &= !last_rank::<IS_WHITE>();
         add_single_pushes::<IS_WHITE>(pushed, self);
 
         double_pushed &= third_rank::<IS_WHITE>();
@@ -108,16 +149,23 @@ impl List {
         pinned = (not_hv_pinned & pins.diag).shifted_forward_left::<IS_WHITE>() & pins.diag;
 
         let mut shifted = (not_hv_pinned & !pins.diag).shifted_forward_left::<IS_WHITE>() | pinned;
-        shifted &= !last_rank::<IS_WHITE>();
         shifted &= board.enemy::<IS_WHITE>();
         shifted &= checkmask;
+        promotions = shifted & last_rank::<IS_WHITE>();
+        add_promotion_captures::<IS_WHITE, true>(promotions, self);
+
+        shifted &= !last_rank::<IS_WHITE>();
         add_captures::<IS_WHITE, true>(shifted, self);
 
         pinned = (not_hv_pinned & pins.diag).shifted_forward_right::<IS_WHITE>() & pins.diag;
         shifted = (not_hv_pinned & !pins.diag).shifted_forward_right::<IS_WHITE>() | pinned;
-        shifted &= !last_rank::<IS_WHITE>();
         shifted &= board.enemy::<IS_WHITE>();
         shifted &= checkmask;
+
+        promotions = shifted & last_rank::<IS_WHITE>();
+        add_promotion_captures::<IS_WHITE, false>(promotions, self);
+
+        shifted &= !last_rank::<IS_WHITE>();
         add_captures::<IS_WHITE, false>(shifted, self);
 
         if state.has_ep_pawn {
@@ -165,7 +213,5 @@ impl List {
                 }
             }
         }
-
-        //TODO: promotions, promotion captures
     }
 }

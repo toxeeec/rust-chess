@@ -13,7 +13,12 @@ const WHITE_CASTLE_RIGHT_PATH: Bitboard = Bitboard::from_squares([5, 6]);
 const BLACK_CASTLE_LEFT_PATH: Bitboard = Bitboard::from_squares([58, 59]);
 const BLACK_CASTLE_RIGHT_PATH: Bitboard = Bitboard::from_squares([61, 62]);
 
-fn add_castle_left<const IS_WHITE: bool>(list: &mut List, board: Board, state: State) {
+fn add_castle_left<const IS_WHITE: bool>(
+    list: &mut List,
+    board: Board,
+    state: State,
+    banned: Bitboard,
+) {
     if IS_WHITE {
         if !state.can_castle_wl {
             return;
@@ -23,20 +28,24 @@ fn add_castle_left<const IS_WHITE: bool>(list: &mut List, board: Board, state: S
     }
 
     if IS_WHITE {
-        if WHITE_CASTLE_LEFT_PATH & board.empty() != WHITE_CASTLE_LEFT_PATH {
+        if WHITE_CASTLE_LEFT_PATH & board.empty() & !banned != WHITE_CASTLE_LEFT_PATH {
             return;
         }
-    } else if BLACK_CASTLE_LEFT_PATH & board.empty() != BLACK_CASTLE_LEFT_PATH {
+    } else if BLACK_CASTLE_LEFT_PATH & board.empty() & !banned != BLACK_CASTLE_LEFT_PATH {
         return;
     }
-    //TODO: check if legal
     if IS_WHITE {
         list.add(4, 2, Flag::QueenCastle)
     } else {
         list.add(60, 58, Flag::QueenCastle)
     }
 }
-fn add_castle_right<const IS_WHITE: bool>(list: &mut List, board: Board, state: State) {
+fn add_castle_right<const IS_WHITE: bool>(
+    list: &mut List,
+    board: Board,
+    state: State,
+    banned: Bitboard,
+) {
     if IS_WHITE {
         if !state.can_castle_wr {
             return;
@@ -45,13 +54,12 @@ fn add_castle_right<const IS_WHITE: bool>(list: &mut List, board: Board, state: 
         return;
     }
     if IS_WHITE {
-        if WHITE_CASTLE_RIGHT_PATH & board.empty() != WHITE_CASTLE_RIGHT_PATH {
+        if WHITE_CASTLE_RIGHT_PATH & board.empty() & !banned != WHITE_CASTLE_RIGHT_PATH {
             return;
         }
-    } else if BLACK_CASTLE_RIGHT_PATH & board.empty() != BLACK_CASTLE_RIGHT_PATH {
+    } else if BLACK_CASTLE_RIGHT_PATH & board.empty() & !banned != BLACK_CASTLE_RIGHT_PATH {
         return;
     }
-    //TODO: check if legal
     if IS_WHITE {
         list.add(4, 6, Flag::KingCastle)
     } else {
@@ -79,14 +87,14 @@ impl List {
             self.add(from, to, Flag::Quiet);
         }
 
-        let mut captures = KNIGHT[from] & board.enemy::<IS_WHITE>();
+        let mut captures = KING[from] & board.enemy::<IS_WHITE>() & !banned;
         while captures.0 > 0 {
             let to = captures.pop_lsb().unwrap();
             self.add(from, to, Flag::Capture);
         }
 
-        add_castle_left::<IS_WHITE>(self, board, state);
-        add_castle_right::<IS_WHITE>(self, board, state);
+        add_castle_left::<IS_WHITE>(self, board, state, banned);
+        add_castle_right::<IS_WHITE>(self, board, state, banned);
     }
 
     pub fn add_knight_moves<const IS_WHITE: bool>(

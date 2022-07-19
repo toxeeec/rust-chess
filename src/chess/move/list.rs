@@ -50,6 +50,10 @@ mod tests {
     const PIN_POS: &str = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1";
     const LEGAL_EP_POS: &str = "kq6/8/8/3pP3/8/6K1/8/8 w - d6 0 1";
     const ILLEGAL_EP_POS: &str = "8/8/8/kq1pP1K1/8/8/8/8 w - d6 0 1";
+    const PROMOTION_POS: &str = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
+    const ILLEGAL_CASTLE_POS: &str =
+        "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPB1PPP/R3K2R w KQkq - 0 1";
+
     #[test]
     fn list_starting_pos_test() {
         let game = Game::new();
@@ -84,5 +88,17 @@ mod tests {
     fn illegal_ep_pos_test() {
         let game = Game::from_fen(ILLEGAL_EP_POS).unwrap();
         assert_eq!(9, game.move_list.0.len());
+    }
+
+    #[test]
+    fn promotion_pos_test() {
+        let game = Game::from_fen(PROMOTION_POS).unwrap();
+        assert_eq!(44, game.move_list.0.len());
+    }
+
+    #[test]
+    fn illegal_castle_pos_test() {
+        let game = Game::from_fen(ILLEGAL_CASTLE_POS).unwrap();
+        assert_eq!(43, game.move_list.0.len());
     }
 }
