@@ -10,7 +10,7 @@ fn pawn_check<const IS_WHITE: bool>(
     board: Board,
     king_sq: usize,
     king_ban: &mut Bitboard,
-) -> bool {
+) {
     let mut pawns_left = if IS_WHITE {
         board.0[Piece::BlackPawn as usize].shifted_forward_left::<false>()
     } else {
@@ -25,31 +25,26 @@ fn pawn_check<const IS_WHITE: bool>(
 
     *king_ban |= pawns_left | pawns_right;
 
-    let dir = Direction::NorthWest as usize;
     while pawns_left.0 > 0 {
         let sq = pawns_left.pop_lsb().unwrap();
         if sq == king_sq {
             if IS_WHITE {
-                *mask = Bitboard::from_square(sq - dir);
+                *mask = Bitboard::from_square(sq).shifted(Direction::NorthWest);
             } else {
-                *mask = Bitboard::from_square(sq + dir);
+                *mask = Bitboard::from_square(sq).shifted(Direction::SouthEast);
             }
-            return true;
         }
     }
-    let dir = Direction::NorthEast as usize;
     while pawns_right.0 > 0 {
         let sq = pawns_right.pop_lsb().unwrap();
         if sq == king_sq {
             if IS_WHITE {
-                *mask = Bitboard::from_square(sq - dir);
+                *mask = Bitboard::from_square(sq).shifted(Direction::NorthEast);
             } else {
-                *mask = Bitboard::from_square(sq + dir);
+                *mask = Bitboard::from_square(sq).shifted(Direction::SouthWest);
             }
-            return true;
         }
     }
-    false
 }
 
 fn knight_check<const IS_WHITE: bool>(
@@ -71,7 +66,6 @@ fn knight_check<const IS_WHITE: bool>(
             let attack = attacks.pop_lsb().unwrap();
             if attack == king_sq {
                 *mask = Bitboard::from_square(sq);
-                return;
             }
         }
     }
@@ -82,7 +76,7 @@ fn bishop_check<const IS_WHITE: bool>(
     board: Board,
     king_sq: usize,
     king_ban: &mut Bitboard,
-) -> bool {
+) {
     let mut bb = if IS_WHITE {
         board.0[Piece::BlackBishop as usize]
     } else {
@@ -91,6 +85,7 @@ fn bishop_check<const IS_WHITE: bool>(
     while bb.0 > 0 {
         let sq = bb.pop_lsb().unwrap();
         let mut attacks = seen_squares_bishop(sq, !board.empty());
+
         *king_ban |= attacks;
         while attacks.0 > 0 {
             let attack = attacks.pop_lsb().unwrap();
@@ -100,12 +95,10 @@ fn bishop_check<const IS_WHITE: bool>(
                     *mask = CHECK_PATH[king_sq * 64 + sq];
                 } else {
                     *mask = Bitboard(0);
-                    return true;
                 }
             }
         }
     }
-    false
 }
 
 fn rook_check<const IS_WHITE: bool>(
@@ -113,7 +106,7 @@ fn rook_check<const IS_WHITE: bool>(
     board: Board,
     king_sq: usize,
     king_ban: &mut Bitboard,
-) -> bool {
+) {
     let mut bb = if IS_WHITE {
         board.0[Piece::BlackRook as usize]
     } else {
@@ -131,12 +124,10 @@ fn rook_check<const IS_WHITE: bool>(
                     *mask = CHECK_PATH[king_sq * 64 + sq];
                 } else {
                     *mask = Bitboard(0);
-                    return true;
                 }
             }
         }
     }
-    false
 }
 
 fn queen_check<const IS_WHITE: bool>(
@@ -144,7 +135,7 @@ fn queen_check<const IS_WHITE: bool>(
     board: Board,
     king_sq: usize,
     king_ban: &mut Bitboard,
-) -> bool {
+) {
     let mut bb = if IS_WHITE {
         board.0[Piece::BlackQueen as usize]
     } else {
@@ -153,6 +144,7 @@ fn queen_check<const IS_WHITE: bool>(
     while bb.0 > 0 {
         let sq = bb.pop_lsb().unwrap();
         let mut attacks = seen_squares_queen(sq, !board.empty());
+        *king_ban |= attacks;
         while attacks.0 > 0 {
             let attack = attacks.pop_lsb().unwrap();
             if attack == king_sq {
@@ -161,12 +153,10 @@ fn queen_check<const IS_WHITE: bool>(
                     *mask = CHECK_PATH[king_sq * 64 + sq];
                 } else {
                     *mask = Bitboard(0);
-                    return true;
                 }
             }
         }
     }
-    false
 }
 
 //TODO: better lookup (mask is 1 when no possible path, add knight path)?
@@ -180,19 +170,10 @@ pub fn checkmask<const IS_WHITE: bool>(board: Board, banned: &mut Bitboard) -> B
     .unwrap();
 
     let mut mask = Bitboard(!0);
-    let checked = pawn_check::<IS_WHITE>(&mut mask, board, king_sq, banned);
-    if checked {
-        return mask;
-    }
+    pawn_check::<IS_WHITE>(&mut mask, board, king_sq, banned);
     knight_check::<IS_WHITE>(&mut mask, board, king_sq, banned);
-    let mut double_check = bishop_check::<IS_WHITE>(&mut mask, board, king_sq, banned);
-    if double_check {
-        return mask;
-    }
-    double_check = rook_check::<IS_WHITE>(&mut mask, board, king_sq, banned);
-    if double_check {
-        return mask;
-    }
+    bishop_check::<IS_WHITE>(&mut mask, board, king_sq, banned);
+    rook_check::<IS_WHITE>(&mut mask, board, king_sq, banned);
     queen_check::<IS_WHITE>(&mut mask, board, king_sq, banned);
 
     mask
@@ -227,7 +208,7 @@ fn diag_pins<const IS_WHITE: bool>(board: Board) -> Bitboard {
         let pinned = seen_squares_bishop(sq, !board.empty() & !blockers);
 
         if pinned & king_bb != Bitboard(0) {
-            pins |= PIN_PATH[king_sq * 64 + sq];
+            pins |= CHECK_PATH[king_sq * 64 + sq];
         };
     }
 
@@ -263,7 +244,7 @@ pub fn hv_pins<const IS_WHITE: bool>(board: Board) -> Bitboard {
         let pinned = seen_squares_rook(sq, !board.empty() & !blockers);
 
         if pinned & king_bb != Bitboard(0) {
-            pins |= PIN_PATH[king_sq * 64 + sq];
+            pins |= CHECK_PATH[king_sq * 64 + sq];
         };
     }
 

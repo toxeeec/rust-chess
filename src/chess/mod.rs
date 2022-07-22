@@ -8,3 +8,4 @@ mod state;
 
 pub use bitboard::Bitboard;
 pub use board::Board;
+pub use game::Game;

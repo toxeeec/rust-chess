@@ -51,9 +51,9 @@ fn add_promotions<const IS_WHITE: bool>(mut bb: Bitboard, list: &mut List) {
     while bb.0 > 0 {
         let to = bb.pop_lsb().unwrap();
         let from = if IS_WHITE {
-            to - (Direction::North as usize) * 2
+            to - Direction::North as usize
         } else {
-            to + (Direction::North as usize) * 2
+            to + Direction::North as usize
         };
         list.add(from, to, Flag::KnightPromotion);
         list.add(from, to, Flag::BishopPromotion);
@@ -169,10 +169,12 @@ impl List {
         add_captures::<IS_WHITE, false>(shifted, self);
 
         if state.has_ep_pawn {
-            let mut can_ep = if IS_WHITE {
-                Bitboard::from_square(ep_square - 7) | Bitboard::from_square(ep_square - 9)
+            let bb = if IS_WHITE {
+                Bitboard::from_square(ep_square).shifted(Direction::SouthEast)
+                    | Bitboard::from_square(ep_square).shifted(Direction::SouthWest)
             } else {
-                Bitboard::from_square(ep_square + 7) | Bitboard::from_square(ep_square + 9)
+                Bitboard::from_square(ep_square).shifted(Direction::NorthEast)
+                    | Bitboard::from_square(ep_square).shifted(Direction::NorthWest)
             } & not_hv_pinned;
 
             let ep_pawn = if IS_WHITE {
@@ -180,6 +182,8 @@ impl List {
             } else {
                 ep_square + 8
             };
+
+            let mut can_ep = bb;
 
             while can_ep.0 > 0 {
                 let sq = can_ep.pop_lsb().unwrap();
@@ -206,7 +210,7 @@ impl List {
                     }
                 }
 
-                let is_pinned = (can_ep & pins.diag).0 > 0;
+                let is_pinned = (Bitboard::from_square(sq) & pins.diag).0 > 0;
                 let is_ep_square_pinned = (Bitboard::from_square(ep_square) & pins.diag).0 > 0;
                 if !is_pinned || is_ep_square_pinned {
                     self.add(sq, ep_square, Flag::EnPassant);

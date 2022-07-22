@@ -1,6 +1,6 @@
 use super::{Bitboard, FILE_A, FILE_B, FILE_G, FILE_H};
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum Direction {
     North = 8,
     East = 1,

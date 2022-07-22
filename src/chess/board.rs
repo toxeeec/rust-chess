@@ -1,7 +1,7 @@
 use super::Bitboard;
 use std::fmt;
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum Piece {
     WhiteRook,
     WhiteKnight,
@@ -16,6 +16,27 @@ pub enum Piece {
     BlackKing,
     BlackQueen,
     BlackPawn,
+}
+
+impl From<usize> for Piece {
+    fn from(piece: usize) -> Self {
+        match piece {
+            0 => Piece::WhiteRook,
+            1 => Piece::WhiteKnight,
+            2 => Piece::WhiteBishop,
+            3 => Piece::WhiteKing,
+            4 => Piece::WhiteQueen,
+            5 => Piece::WhitePawn,
+
+            6 => Piece::BlackRook,
+            7 => Piece::BlackKnight,
+            8 => Piece::BlackBishop,
+            9 => Piece::BlackKing,
+            10 => Piece::BlackQueen,
+            11 => Piece::BlackPawn,
+            _ => panic!("Unknown piece: {:?}", piece),
+        }
+    }
 }
 
 const PIECE_ITEMS: [Piece; 12] = [

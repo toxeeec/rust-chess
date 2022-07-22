@@ -10,8 +10,10 @@
 
 use std::fmt;
 
-#[derive(Debug)]
-#[repr(usize)]
+use crate::chess::square::square_to_name;
+
+#[derive(Debug, PartialEq, Eq)]
+#[repr(u32)]
 pub enum Flag {
     Quiet = 0b0,
     DoublePush = 0b1,
@@ -29,8 +31,8 @@ pub enum Flag {
     QueenPromotionCapture = 0b1111,
 }
 
-impl From<usize> for Flag {
-    fn from(flag: usize) -> Self {
+impl From<u32> for Flag {
+    fn from(flag: u32) -> Self {
         match flag {
             0b0 => Flag::Quiet,
             0b1 => Flag::DoublePush,
@@ -51,8 +53,9 @@ impl From<usize> for Flag {
     }
 }
 
-#[derive(PartialEq)]
-pub struct Type(pub usize);
+//TODO: contain piece type
+#[derive(PartialEq, Eq)]
+pub struct Type(pub u32);
 
 impl Type {
     pub const fn new(from: usize, to: usize, flag: Flag) -> Self {
@@ -60,15 +63,15 @@ impl Type {
         move_type |= to << 4;
         move_type |= flag as usize;
 
-        Self(move_type)
+        Self(move_type as u32)
     }
-    const fn from(&self) -> usize {
-        self.0 >> 10
+    pub const fn from(&self) -> usize {
+        (self.0 >> 10) as usize
     }
-    const fn to(&self) -> usize {
-        self.0 >> 4 & 0b111111
+    pub const fn to(&self) -> usize {
+        (self.0 >> 4 & 0b111111) as usize
     }
-    fn flag(&self) -> Flag {
+    pub fn flag(&self) -> Flag {
         let flag: Flag = (self.0 & 0b1111).into();
         flag
     }
@@ -79,8 +82,8 @@ impl fmt::Debug for Type {
         write!(
             f,
             "(from: {}, to: {}, flag: {:?})",
-            self.from(),
-            self.to(),
+            square_to_name(self.from()),
+            square_to_name(self.to()),
             self.flag()
         )
     }

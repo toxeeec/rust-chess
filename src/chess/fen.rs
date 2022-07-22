@@ -1,7 +1,7 @@
 use super::board::CHAR_PIECES;
 use super::game::{Game, MoveCounter};
 use super::r#move::List;
-use super::square::name_to_number;
+use super::square::name_to_square;
 use super::state::State;
 use super::Board;
 use thiserror::Error;
@@ -66,7 +66,7 @@ fn state(side: &str, castling: &str, ep: &str, ep_square: &mut usize) -> Result<
     let has_ep_pawn = if ep == "-" {
         false
     } else {
-        match name_to_number(ep) {
+        match name_to_square(ep) {
             Ok(sq) => {
                 *ep_square = sq;
                 true
@@ -86,12 +86,12 @@ fn state(side: &str, castling: &str, ep: &str, ep_square: &mut usize) -> Result<
 }
 
 fn moves(half: &str, full: &str) -> Result<MoveCounter, FenError> {
-    let half_clock = match half.parse::<usize>() {
+    let half_clock = match half.parse::<u32>() {
         Ok(n) => n,
         Err(_) => return Err(FenError::InvalidField(5)),
     };
 
-    let full = match full.parse::<usize>() {
+    let full = match full.parse::<u32>() {
         n @ Ok(1..) => n.unwrap(),
         _ => return Err(FenError::InvalidField(6)),
     };

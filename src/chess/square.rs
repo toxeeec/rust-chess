@@ -1,3 +1,5 @@
+use std::char::from_digit;
+
 use thiserror::Error;
 
 pub const fn max(x: usize, y: usize) -> usize {
@@ -42,7 +44,7 @@ pub enum SquareError {
     InvalidRank(char),
 }
 
-pub fn name_to_number(name: &str) -> Result<usize, SquareError> {
+pub fn name_to_square(name: &str) -> Result<usize, SquareError> {
     if name.len() != 2 {
         return Err(SquareError::InvalidLength(name.len()));
     }
@@ -59,6 +61,17 @@ pub fn name_to_number(name: &str) -> Result<usize, SquareError> {
         return Err(SquareError::InvalidRank(rank_byte as char));
     }
     Ok((rank * 8 + file) as usize)
+}
+
+pub fn square_to_name(sq: usize) -> String {
+    //TODO: error handling for > 63
+    let file = sq % 8;
+    let rank = sq / 8 + 1;
+    let mut name = String::with_capacity(2);
+    name.push((b'a' + file as u8) as char);
+    name.push(from_digit(rank as u32, 10).unwrap());
+
+    name
 }
 
 pub const SQUARES_DISTANCES: [[usize; 64]; 64] = squares_distances();
@@ -84,6 +97,6 @@ mod tests {
     #[case("a9", Err(SquareError::InvalidRank('9')))]
     #[case("abc", Err(SquareError::InvalidLength(3)))]
     fn name_to_number_test(#[case] name: &str, #[case] expected: Result<usize, SquareError>) {
-        assert_eq!(expected, name_to_number(name));
+        assert_eq!(expected, name_to_square(name));
     }
 }

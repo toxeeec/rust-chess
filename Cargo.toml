@@ -8,6 +8,11 @@ rstest = "0.13.0"
 rand = "0.8.5"
 lazy_static = "1.4.0"
 thiserror = "1.0.31"
+criterion = "0.3.6"
 
 [profile.test]
 opt-level = 3
+
+[[bench]]
+name = "perft_benchmark"
+harness = false
