@@ -19,7 +19,7 @@ pub struct Game {
     pub move_counter: MoveCounter,
 }
 
-fn perft_inner(mut game: Game, nodes: &mut usize, depth: u32, captures: &mut usize) {
+fn perft_inner(game: Game, nodes: &mut usize, depth: u32, captures: &mut usize) {
     if depth == 1 {
         *nodes += game.move_list.0.len();
         for m in &game.move_list.0 {
@@ -29,7 +29,7 @@ fn perft_inner(mut game: Game, nodes: &mut usize, depth: u32, captures: &mut usi
         }
         return;
     }
-    for (i, m) in game.move_list.0.iter().enumerate() {
+    for m in game.move_list.0 {
         let mut ep_square = game.ep_square;
         let mut board = game.board;
         let mut state = game.state;
@@ -55,11 +55,13 @@ fn perft_inner(mut game: Game, nodes: &mut usize, depth: u32, captures: &mut usi
     }
 }
 
-impl Game {
-    pub fn new() -> Self {
+impl Default for Game {
+    fn default() -> Self {
         Self::from_fen(STARTING_POS).unwrap()
     }
+}
 
+impl Game {
     pub fn perft(fen: &str, depth: u32) -> Result<usize, FenError> {
         let game = Game::from_fen(fen)?;
         let mut nodes = 0;

@@ -133,7 +133,7 @@ mod tests {
 
     #[test]
     fn fen_starting_pos_test() {
-        let board = Game::new().board;
+        let board = Game::default().board;
         let expected = Board([
             Bitboard(0b10000001),
             Bitboard(0b01000010),
@@ -153,21 +153,21 @@ mod tests {
 
     #[test]
     fn empty_starting_pos_test() {
-        let board = Game::new().board;
+        let board = Game::default().board;
         let expected = Bitboard(0b11111111111111111111111111111111 << 16);
         assert_eq!(expected, board.empty());
     }
 
     #[test]
     fn enemy_starting_pos_white_test() {
-        let board = Game::new().board;
+        let board = Game::default().board;
         let expected = Bitboard(0b1111111111111111 << 48);
         assert_eq!(expected, board.enemy::<true>());
     }
 
     #[test]
     fn enemy_starting_pos_black_test() {
-        let board = Game::new().board;
+        let board = Game::default().board;
         let expected = Bitboard(0b1111111111111111);
         assert_eq!(expected, board.enemy::<false>());
     }

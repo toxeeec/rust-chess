@@ -40,25 +40,25 @@ pub const DIRECTION_ITEMS: [Direction; 8] = [
 
 #[derive(Clone, Copy)]
 pub enum KnightDir {
-    NNE,
-    NEE,
-    SEE,
-    SSE,
-    SSW,
-    SWW,
-    NWW,
-    NNW,
+    Nne,
+    Nee,
+    See,
+    Sse,
+    Ssw,
+    Sww,
+    Nww,
+    Nnw,
 }
 
 pub const KNIGHTDIR_ITEMS: [KnightDir; 8] = [
-    KnightDir::NNE,
-    KnightDir::NEE,
-    KnightDir::SEE,
-    KnightDir::SSE,
-    KnightDir::SSW,
-    KnightDir::SWW,
-    KnightDir::NWW,
-    KnightDir::NNW,
+    KnightDir::Nne,
+    KnightDir::Nee,
+    KnightDir::See,
+    KnightDir::Sse,
+    KnightDir::Ssw,
+    KnightDir::Sww,
+    KnightDir::Nww,
+    KnightDir::Nnw,
 ];
 
 impl Bitboard {
@@ -76,14 +76,14 @@ impl Bitboard {
     }
     pub const fn knightdir_shifted(&self, dir: KnightDir) -> Self {
         match dir {
-            KnightDir::NNE => Bitboard((self.0 & !FILE_H.0) << 17),
-            KnightDir::NEE => Bitboard((self.0 & !(FILE_G.0 | FILE_H.0)) << 10),
-            KnightDir::SEE => Bitboard((self.0 & !(FILE_G.0 | FILE_H.0)) >> 6),
-            KnightDir::SSE => Bitboard((self.0 & !FILE_H.0) >> 15),
-            KnightDir::SSW => Bitboard((self.0 & !FILE_A.0) >> 17),
-            KnightDir::SWW => Bitboard((self.0 & !(FILE_A.0 | FILE_B.0)) >> 10),
-            KnightDir::NWW => Bitboard((self.0 & !(FILE_A.0 | FILE_B.0)) << 6),
-            KnightDir::NNW => Bitboard((self.0 & !FILE_A.0) << 15),
+            KnightDir::Nne => Bitboard((self.0 & !FILE_H.0) << 17),
+            KnightDir::Nee => Bitboard((self.0 & !(FILE_G.0 | FILE_H.0)) << 10),
+            KnightDir::See => Bitboard((self.0 & !(FILE_G.0 | FILE_H.0)) >> 6),
+            KnightDir::Sse => Bitboard((self.0 & !FILE_H.0) >> 15),
+            KnightDir::Ssw => Bitboard((self.0 & !FILE_A.0) >> 17),
+            KnightDir::Sww => Bitboard((self.0 & !(FILE_A.0 | FILE_B.0)) >> 10),
+            KnightDir::Nww => Bitboard((self.0 & !(FILE_A.0 | FILE_B.0)) << 6),
+            KnightDir::Nnw => Bitboard((self.0 & !FILE_A.0) << 15),
         }
     }
 
@@ -134,38 +134,38 @@ mod tests {
     }
 
     #[rstest]
-    #[case(1, KnightDir::NNE, 1 << 17)]
-    #[case(1 << 7, KnightDir::NNE, 0)]
-    #[case(1 << 48, KnightDir::NNE, 0)]
-    #[case(1 << 56, KnightDir::NNE, 0)]
-    #[case(1, KnightDir::NEE, 1 << 10)]
-    #[case(1 << 54, KnightDir::NEE, 0)]
-    #[case(1 << 55, KnightDir::NEE, 0)]
-    #[case(1 << 56, KnightDir::NEE, 0)]
-    #[case(1, KnightDir::SEE, 0)]
-    #[case(1 << 14, KnightDir::SEE, 0)]
-    #[case(1 << 15, KnightDir::SEE, 0)]
-    #[case(1 << 56, KnightDir::SEE, 1 << 50)]
-    #[case(1, KnightDir::SSE, 0)]
-    #[case(1 << 8, KnightDir::SSE, 0)]
-    #[case(1 << 56, KnightDir::SSE, 1 << 41)]
-    #[case(1 << 63, KnightDir::SSE, 0)]
-    #[case(1 << 15, KnightDir::SSW, 0)]
-    #[case(1 << 7, KnightDir::SSW, 0)]
-    #[case(1 << 56, KnightDir::SSW, 0)]
-    #[case(1 << 63, KnightDir::SSW, 1 << 46)]
-    #[case(1 << 8, KnightDir::SWW, 0)]
-    #[case(1 << 9, KnightDir::SWW, 0)]
-    #[case(1 << 7, KnightDir::SWW, 0)]
-    #[case(1 << 63, KnightDir::SWW, 1 << 53)]
-    #[case(1 << 48, KnightDir::NWW, 0)]
-    #[case(1 << 49, KnightDir::NWW, 0)]
-    #[case(1 << 63, KnightDir::NWW, 0)]
-    #[case(1 << 7, KnightDir::NWW, 1 << 13)]
-    #[case(1, KnightDir::NNW, 0)]
-    #[case(1 << 7, KnightDir::NNW, 1 << 22)]
-    #[case(1 << 55, KnightDir::NNW, 0)]
-    #[case(1 << 63, KnightDir::NNW, 0)]
+    #[case(1, KnightDir::Nne, 1 << 17)]
+    #[case(1 << 7, KnightDir::Nne, 0)]
+    #[case(1 << 48, KnightDir::Nne, 0)]
+    #[case(1 << 56, KnightDir::Nne, 0)]
+    #[case(1, KnightDir::Nee, 1 << 10)]
+    #[case(1 << 54, KnightDir::Nee, 0)]
+    #[case(1 << 55, KnightDir::Nee, 0)]
+    #[case(1 << 56, KnightDir::Nee, 0)]
+    #[case(1, KnightDir::See, 0)]
+    #[case(1 << 14, KnightDir::See, 0)]
+    #[case(1 << 15, KnightDir::See, 0)]
+    #[case(1 << 56, KnightDir::See, 1 << 50)]
+    #[case(1, KnightDir::Sse, 0)]
+    #[case(1 << 8, KnightDir::Sse, 0)]
+    #[case(1 << 56, KnightDir::Sse, 1 << 41)]
+    #[case(1 << 63, KnightDir::Sse, 0)]
+    #[case(1 << 15, KnightDir::Ssw, 0)]
+    #[case(1 << 7, KnightDir::Ssw, 0)]
+    #[case(1 << 56, KnightDir::Ssw, 0)]
+    #[case(1 << 63, KnightDir::Ssw, 1 << 46)]
+    #[case(1 << 8, KnightDir::Sww, 0)]
+    #[case(1 << 9, KnightDir::Sww, 0)]
+    #[case(1 << 7, KnightDir::Sww, 0)]
+    #[case(1 << 63, KnightDir::Sww, 1 << 53)]
+    #[case(1 << 48, KnightDir::Nww, 0)]
+    #[case(1 << 49, KnightDir::Nww, 0)]
+    #[case(1 << 63, KnightDir::Nww, 0)]
+    #[case(1 << 7, KnightDir::Nww, 1 << 13)]
+    #[case(1, KnightDir::Nnw, 0)]
+    #[case(1 << 7, KnightDir::Nnw, 1 << 22)]
+    #[case(1 << 55, KnightDir::Nnw, 0)]
+    #[case(1 << 63, KnightDir::Nnw, 0)]
     fn knightdir_shifted_test(#[case] bb: u64, #[case] dir: KnightDir, #[case] expected: u64) {
         let bb = Bitboard(bb);
         assert_eq!(Bitboard(expected), bb.knightdir_shifted(dir));

@@ -1,4 +1,4 @@
-pub(crate) mod bitboard;
+mod bitboard;
 mod board;
 mod fen;
 mod game;
@@ -8,4 +8,5 @@ mod state;
 
 pub use bitboard::Bitboard;
 pub use board::Board;
+pub use fen::STARTING_POS;
 pub use game::Game;

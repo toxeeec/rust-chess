@@ -102,13 +102,6 @@ fn add_promotion_captures<const IS_WHITE: bool, const IS_LEFT: bool>(
     }
 }
 
-fn add_en_passants(mut bb: Bitboard, list: &mut List, ep_square: usize) {
-    while bb.0 > 0 {
-        let from = bb.pop_lsb().unwrap();
-        list.add(from, ep_square, Flag::EnPassant);
-    }
-}
-
 impl List {
     pub fn add_pawn_moves<const IS_WHITE: bool>(
         &mut self,

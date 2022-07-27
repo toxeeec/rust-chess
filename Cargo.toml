@@ -9,6 +9,8 @@ rand = "0.8.5"
 lazy_static = "1.4.0"
 thiserror = "1.0.31"
 criterion = "0.3.6"
+clap = { version = "3.2.15", features = ["derive"] }
+anyhow = "1.0.58"
 
 [profile.test]
 opt-level = 3

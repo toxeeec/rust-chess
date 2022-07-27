@@ -1,7 +1,7 @@
 use crate::chess::{bitboard::shift::Direction, board::Piece, Bitboard, Board};
 
 use super::{
-    lookup::{CHECK_PATH, KING, KNIGHT, PIN_PATH},
+    lookup::{CHECK_PATH, KNIGHT, PIN_PATH},
     magic::{seen_squares_bishop, seen_squares_queen, seen_squares_rook},
 };
 
@@ -258,13 +258,6 @@ pub struct Pins {
 }
 
 pub fn pinmask<const IS_WHITE: bool>(board: Board) -> Pins {
-    let pinmask = Bitboard(0);
-    let king_bb = if IS_WHITE {
-        board.0[Piece::WhiteKing as usize]
-    } else {
-        board.0[Piece::BlackKing as usize]
-    };
-
     let hv_pins = hv_pins::<IS_WHITE>(board);
     let diagonal_pins = diag_pins::<IS_WHITE>(board);
 

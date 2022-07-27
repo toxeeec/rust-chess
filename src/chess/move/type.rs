@@ -12,7 +12,7 @@ use std::fmt;
 
 use crate::chess::square::square_to_name;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[repr(u32)]
 pub enum Flag {
     Quiet = 0b0,

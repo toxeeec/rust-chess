@@ -12,7 +12,7 @@ pub use r#type::{Flag, Type};
 
 use self::figures::{is_left_rook, is_right_rook};
 
-use super::{board::Piece, game::Game, state::State, Bitboard, Board};
+use super::{board::Piece, state::State, Bitboard, Board};
 
 impl Type {
     pub fn make<const IS_WHITE: bool>(

@@ -46,7 +46,6 @@ impl List {
 #[cfg(test)]
 mod tests {
 
-    use crate::chess::{fen::STARTING_POS, r#move::Game};
     use rstest::rstest;
 
     const KIWI_POS: &str = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
@@ -59,15 +58,16 @@ mod tests {
         "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPB1PPP/R3K2R w KQkq - 0 1";
 
     #[rstest]
-    #[case(STARTING_POS, 4, 197281)]
+    #[case(crate::chess::fen::STARTING_POS, 4, 197281)]
     #[case(KIWI_POS, 5, 193690690)]
     #[case(CHECK_POS, 5, 15833292)]
     #[case(PIN_POS, 5, 674624)]
     #[case(LEGAL_EP_POS, 1, 9)]
     #[case(ILLEGAL_EP_POS, 1, 9)]
+    #[case(ILLEGAL_CASTLE_POS, 1, 43)]
     #[case(PROMOTION_POS, 5, 89941194)]
     fn perft_test(#[case] fen: &str, #[case] depth: u32, #[case] expected: usize) {
-        let nodes = Game::perft(fen, depth).unwrap();
+        let nodes = crate::chess::Game::perft(fen, depth).unwrap();
         assert_eq!(expected, nodes);
     }
 }

@@ -11,9 +11,9 @@ pub const STARTING_POS: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQ
 #[derive(Error, Debug)]
 pub enum FenError {
     #[error("Invalid FEN at field: {0}")]
-    InvalidField(usize),
-    #[error("FEN must contain 6 fields")]
-    InvalidLength,
+    Field(usize),
+    #[error("FEN must contain 6 fields, got: {0}")]
+    Length(usize),
 }
 
 fn board(pieces: &str) -> Result<Board, FenError> {
@@ -28,7 +28,7 @@ fn board(pieces: &str) -> Result<Board, FenError> {
             match p {
                 n @ '1'..='8' => sq += n.to_digit(10).unwrap(),
                 '/' => sq -= 16,
-                _ => return Err(FenError::InvalidField(1)),
+                _ => return Err(FenError::Field(1)),
             }
         }
     }
@@ -39,7 +39,7 @@ fn state(side: &str, castling: &str, ep: &str, ep_square: &mut usize) -> Result<
     let is_white = match side {
         "w" => true,
         "b" => false,
-        _ => return Err(FenError::InvalidField(2)),
+        _ => return Err(FenError::Field(2)),
     };
 
     let mut can_castle_wl = false;
@@ -58,7 +58,7 @@ fn state(side: &str, castling: &str, ep: &str, ep_square: &mut usize) -> Result<
                 'Q' => can_castle_wr = true,
                 'k' => can_castle_bl = true,
                 'q' => can_castle_br = true,
-                _ => return Err(FenError::InvalidField(3)),
+                _ => return Err(FenError::Field(3)),
             }
         }
     };
@@ -71,7 +71,7 @@ fn state(side: &str, castling: &str, ep: &str, ep_square: &mut usize) -> Result<
                 *ep_square = sq;
                 true
             }
-            Err(_) => return Err(FenError::InvalidField(4)),
+            Err(_) => return Err(FenError::Field(4)),
         }
     };
 
@@ -88,12 +88,12 @@ fn state(side: &str, castling: &str, ep: &str, ep_square: &mut usize) -> Result<
 fn moves(half: &str, full: &str) -> Result<MoveCounter, FenError> {
     let half_clock = match half.parse::<u32>() {
         Ok(n) => n,
-        Err(_) => return Err(FenError::InvalidField(5)),
+        Err(_) => return Err(FenError::Field(5)),
     };
 
     let full = match full.parse::<u32>() {
         n @ Ok(1..) => n.unwrap(),
-        _ => return Err(FenError::InvalidField(6)),
+        _ => return Err(FenError::Field(6)),
     };
 
     Ok(MoveCounter { half_clock, full })
@@ -103,7 +103,7 @@ impl Game {
     pub fn from_fen(fen: &str) -> Result<Game, FenError> {
         let fields: [&str; 6] = match fen.split_whitespace().collect::<Vec<_>>().try_into() {
             Ok(fields) => fields,
-            Err(_) => return Err(FenError::InvalidLength),
+            Err(v) => return Err(FenError::Length(v.len())),
         };
 
         let board = board(fields[0])?;
@@ -129,21 +129,20 @@ impl Game {
 }
 
 mod tests {
-    use super::*;
     use rstest::rstest;
 
     #[rstest]
-    #[case(STARTING_POS, true)]
+    #[case(crate::chess::STARTING_POS, true)]
     #[case("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", false)]
     fn parse_test(#[case] fen: &str, #[case] is_ok: bool) {
-        assert_eq!(is_ok, Game::from_fen(fen).is_ok());
+        assert_eq!(is_ok, crate::chess::Game::from_fen(fen).is_ok());
     }
 
     #[rstest]
     #[case("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", true)]
     #[case("AAAAAAAA/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", false)]
     fn board_test(#[case] field: &str, #[case] is_ok: bool) {
-        assert_eq!(is_ok, board(field).is_ok());
+        assert_eq!(is_ok, crate::chess::fen::board(field).is_ok());
     }
 
     #[rstest]
@@ -157,7 +156,10 @@ mod tests {
         #[case] ep: &str,
         #[case] is_ok: bool,
     ) {
-        assert_eq!(is_ok, state(side, castling, ep, &mut 0).is_ok());
+        assert_eq!(
+            is_ok,
+            crate::chess::fen::state(side, castling, ep, &mut 0).is_ok()
+        );
     }
 
     #[rstest]
@@ -166,6 +168,6 @@ mod tests {
     #[case("A", "1", false)]
     #[case("0", "a", false)]
     fn moves_test(#[case] half: &str, #[case] full: &str, #[case] is_ok: bool) {
-        assert_eq!(is_ok, moves(half, full).is_ok());
+        assert_eq!(is_ok, crate::chess::fen::moves(half, full).is_ok());
     }
 }
